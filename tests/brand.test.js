@@ -5,12 +5,13 @@ test('all entry pages carry the accessible Roots identity and browser icon',()=>
     const doc=new DOMParser().parseFromString(readFileSync(file,'utf8'),'text/html');
     expect(doc.querySelector('.brand-roots').getAttribute('aria-label')).toBe('OTF Roots — home');
     expect(doc.querySelector('.brand-roots img').getAttribute('alt')).toBe('');
-    expect(doc.querySelector('link[rel="icon"]').getAttribute('href')).toBe('/brand/favicon.svg');
+    expect(doc.querySelector('.brand-roots img').getAttribute('src')).toBe('/brand/otf.png');
+    expect(doc.querySelector('link[rel="icon"]').getAttribute('href')).toBe('/brand/otf.png');
+    expect(doc.querySelector('link[rel="icon"]').getAttribute('type')).toBe('image/png');
+    expect(doc.querySelectorAll('img[src$=".svg"]').length).toBe(0);
   }
-  for(const file of ['otf-roots-mark.svg','favicon.svg']){
-    const svg=new DOMParser().parseFromString(readFileSync(`public/brand/${file}`,'utf8'),'image/svg+xml');
-    expect(svg.querySelector('parsererror')).toBeNull();
-    expect(svg.documentElement.getAttribute('viewBox')).toBe('0 0 64 64');
-    expect(svg.querySelector('script')).toBeNull();
-  }
+  const png=readFileSync('public/brand/otf.png');
+  expect(png.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+  expect(png.readUInt32BE(16)).toBe(1000);
+  expect(png.readUInt32BE(20)).toBe(1000);
 });

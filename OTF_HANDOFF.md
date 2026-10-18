@@ -4,7 +4,15 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
-## Connected-node tree identity (2026-10-18)
+## Supplied PNG brand replacement (2026-10-18)
+
+Replaced the connected-node logo with the user's `/Users/tevdev/Downloads/otf.png` (orange emblem with a flask). `public/brand/otf.png` is a byte-identical copy; original remains untouched. Applied to family/login and Community headers, desktop demo sidebar, phone demo header and all entry-page favicons. CSS frames the transparent margins without editing the image; the OTF Roots wordmark and green animated background remain unchanged. Removed the two superseded SVG logo/icon files from current source; they remain recoverable in Git history.
+
+Sites guidance informed responsive validation while retaining Vercel/Supabase. Syntax checks, five model tests, twelve UI tests, production build and whitespace checks passed. Browser checked loaded PNG and desktop/mobile layout with no horizontal overflow. No authentication/database changes.
+
+Published to Vercel as `dpl_79cL6J1phJZCgZhowAifnrYfCUXw` (READY), aliased to https://otfroots.com. Live browser verified `/brand/otf.png` loaded at its original 1000px resolution.
+
+## Connected-node tree identity (2026-10-18, superseded by supplied PNG)
 
 User chose a modern connected-node tree logo. Added an original, static SVG mark with green branches, a white central junction and three roots, paired with the OTF Roots wordmark and Only the Family tagline. Applied to the shared family header, Community and demo sidebar; the phone demo header gets the compact mark. All entry pages have a matching dark-backed SVG favicon. Source artwork: `public/brand/otf-roots-mark.svg`; small-size icon: `public/brand/favicon.svg`. These are vector assets without private data or external dependencies. Sites guidance informed responsive integration; existing Vercel/Supabase retained.
 
