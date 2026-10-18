@@ -4,6 +4,14 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Connected-node tree identity (2026-10-18)
+
+User chose a modern connected-node tree logo. Added an original, static SVG mark with green branches, a white central junction and three roots, paired with the OTF Roots wordmark and Only the Family tagline. Applied to the shared family header, Community and demo sidebar; the phone demo header gets the compact mark. All entry pages have a matching dark-backed SVG favicon. Source artwork: `public/brand/otf-roots-mark.svg`; small-size icon: `public/brand/favicon.svg`. These are vector assets without private data or external dependencies. Sites guidance informed responsive integration; existing Vercel/Supabase retained.
+
+Validation: syntax checks, five model tests, twelve UI tests including logo accessibility/entry-page coverage and SVG parsing, production build and whitespace checks. Browser reviewed desktop and 390px headers plus the demo phone mark, with no horizontal overflow. No database/auth changes.
+
+Published to Vercel: `dpl_CUzn3Xskh5T3wWCA74yeDvwrN1wX` reached READY at https://otfroots.com. The live browser confirmed the new header mark loaded alongside the existing sign-in form.
+
 ## Latest visual update: green connection theme across all pages (2026-10-18)
 
 Applied the login screen's black/dark-panel and white-text theme across Family Circle, Community (feed, profiles, threads and forms), and the fictional demo (home, tree, gatherings and relative dialog). Tree lines, nodes, moving signals and accent colors are now green. Public/demo pages share the full decorative tree; authenticated family views retain the individual decorative branch. Neither artwork depicts private records or inferred ancestry. Removed the demo's photographic hero treatment in favor of the shared theme; no assets or family records were deleted.

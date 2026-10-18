@@ -1,5 +1,18 @@
 /* The same quiet, dark surfaces across family, public, and fictional pages. */
 :root{background:#030806;color-scheme:dark}
+.brand.brand-roots{display:inline-flex;align-items:center;gap:11px;letter-spacing:normal;flex-shrink:0;text-decoration:none;min-height:48px}
+.brand-roots img{display:block;flex-shrink:0;width:56px;height:56px}
+.brand.brand-roots .brand-copy{display:grid;gap:7px;margin:0;font-family:'Manrope',sans-serif;letter-spacing:normal}
+.brand-roots strong{font-size:24px;font-weight:800;line-height:1;letter-spacing:-1px;color:#f5faf7;white-space:nowrap}
+.brand-roots strong b{font-weight:500;color:#b0ffd0}
+.brand-roots small{font:8px 'DM Sans',sans-serif;letter-spacing:2px;color:#c4d3ca;white-space:nowrap}
+.sidebar .brand-roots{gap:8px}
+.sidebar .brand-roots img{width:44px;height:44px}
+.sidebar .brand-roots strong{font-size:21px}
+.sidebar .brand-roots small{font-size:7px;letter-spacing:1.5px}
+.mobile-brand-mark{display:none}
+@media(max-width:650px){.brand-roots img{width:44px;height:44px}.brand-roots strong{font-size:21px}.brand-roots small{font-size:7px;letter-spacing:1.5px}}
+@media(max-width:600px){.sidebar .brand.brand-roots{display:none}.mobile-brand-mark{display:inline-block;vertical-align:middle;margin-right:9px}}
 .network-public .network-backdrop{display:block}
 .network-member :is(h1,h2,h3),.network-welcome :is(h1,h2,h3){font-family:'Manrope',sans-serif}
 .network-member :is(.community-aside p,.community-compose small,.public-label,.post-actions,.roots-card p,.sidebar-bottom,blockquote,.person-card>span:last-child){color:#b9cec1}
