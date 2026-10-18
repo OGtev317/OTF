@@ -24,6 +24,16 @@ Set Supabase Auth's site URL to the production origin and allow that exact origi
 
 GitHub automatic deployment is not connected. The kinship migration was applied to hosted and the client on `main` deployed to the domain on 2026-10-18; see `OTF_HANDOFF.md`. Apply any future migration to hosted before deploying a client that depends on it.
 
+## Email delivery (Resend, chosen 2026-10-18)
+
+Supabase's built-in sender only reaches members of the Supabase organization (about two messages an hour), so relatives cannot confirm accounts without a custom sender. The chosen sender is Resend (free tier) on the subdomain `mail.otfroots.com`, keeping the apex free for any future mailbox.
+
+1. Resend → Domains → add `mail.otfroots.com`. Add the records it lists in Cloudflare DNS for `otfroots.com` (a DKIM TXT at `resend._domainkey.mail`, and an MX and SPF TXT at `send.mail`), DNS only, or use Resend's automatic Cloudflare setup. Wait for "Verified".
+2. Resend → Integrations → Supabase → connect the OTF project (`fmfsctqtnpjjfxmumolk`), domain `mail.otfroots.com`, sender `no-reply@mail.otfroots.com`, name `OTF Roots`. This writes the SMTP settings into Supabase; no key is copied by hand. (Manual alternative: Supabase custom SMTP with host `smtp.resend.com`, port 465, user `resend`, password a Resend API key; never commit or paste the key elsewhere.)
+3. Supabase → Authentication → Email Templates: set "Confirm signup" and "Reset password" to the subjects in `supabase/config.toml` and the bodies in `supabase/templates/`.
+4. Supabase → Authentication → Rate limits: check the email limit (custom SMTP starts around 30 an hour), enough for a family pilot.
+5. Test from a phone: sign up with a real address, open the email on the phone, sign in, and request a password reset. Only then remove the "email onboarding is being set up" banners.
+
 ## Accounts and invitations
 
 An account alone grants no family access. A user can create a family as its owner or redeem an invitation to become a member. Invitations are high-entropy bearer codes: share privately. The database stores only their hashes, accepts them once, and rejects revoked or expired codes. The app does not send invitation messages; the owner shares the code themselves. Owners can remove a member, which blocks subsequent reads and writes. Previously viewed or copied content cannot be recalled.

@@ -13,9 +13,9 @@ double_confirm_changes = true
 # Links carry a token hash, so they work on any device (for example, opened from a phone's mail app).
 # The hosted project needs the same two templates set in Authentication → Email Templates.
 [auth.email.template.confirmation]
-subject = "Confirm your OTF account"
+subject = "Confirm your OTF Roots account"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "Reset your OTF password"
+subject = "Reset your OTF Roots password"
 content_path = "./supabase/templates/recovery.html"
