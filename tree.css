@@ -23,3 +23,48 @@
 /* Members: long option names and invitation links must not widen the card on phones. */
 #invite-form,#invite-code,#invite-form>*,#invite-code>*{min-width:0}
 #invite-form :is(input,select),#invite-code input{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}
+/* Connected family tree: generations of cards joined by lines, with a panel for the selected person.
+   The tree uses the page's full width; the other tabs keep their reading width. */
+#family-content[data-view=tree]{max-width:none}
+.tree-guidance summary{cursor:pointer;font-weight:600}.tree-guidance ul{margin:12px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13px;line-height:1.5}
+.tree-attention h4{margin:16px 0 6px;font-size:13px}.tree-attention .member span strong{font-weight:700}
+.tree-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:12px 16px;margin:22px 0}
+.tree-toolbar label{display:grid;gap:6px;font-size:13px;flex:1 1 220px;max-width:340px}.tree-toolbar .branch-filter{margin:0}
+.tree-toolbar input,.tree-toolbar select{padding:11px 12px;border-radius:8px;border:1px solid #287d4c;font:inherit}
+.tree-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:20px;align-items:start}
+.tree-layout.empty{grid-template-columns:minmax(0,520px)}
+.tree-canvas{position:relative;overflow-x:auto;padding:6px 6px 14px;overscroll-behavior-x:contain}
+.tree-lines{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.tree-gen{position:relative;margin-bottom:38px}.tree-gen:last-child{margin-bottom:0}
+.tree-gen-label,.focus-all h4{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#b9cec1;margin:0 0 12px;text-align:center}
+.tree-row{position:relative;z-index:1;display:flex;gap:14px;width:max-content;margin:0 auto}
+.tree-line{fill:none;stroke:#2f7a4d;stroke-width:1.6}.tree-line.partner{stroke:#4a9b69;stroke-width:2}
+.tree-line.lit{stroke:#a9edc4;stroke-width:2.6}.tree-line.pending{stroke-dasharray:5 5}
+.network-member .tree-node,.tree-node{display:grid;gap:3px;align-content:start;width:156px;min-height:84px;padding:11px 12px;text-align:left;border-radius:12px;border:1px solid #287d4c;background:#020805;color:#f5faf7;font:inherit;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,opacity .2s ease}
+.tree-node strong{font-size:15px;line-height:1.25;overflow-wrap:anywhere}.tree-node small{font-size:12px;color:#b9cec1;line-height:1.35}
+.tree-node .kin-label{color:#a9edc4;font-weight:600}
+.network-member .tree-node:hover{background:#06140c;border-color:#5fbf86}
+.tree-node.memorial strong{font-style:italic}
+.tree-node.near{border-color:#5fbf86}
+.network-member .tree-node.selected{border-color:#a9edc4;box-shadow:0 0 0 2px #a9edc455,0 10px 30px #0008;transform:scale(1.04)}
+.tree-node.ghost{border-style:dashed;opacity:.85}.tree-node.has-pending{border-style:dashed}
+.tree-flag{display:inline-block;justify-self:start;margin-top:4px;padding:2px 8px;border-radius:999px;border:1px dashed #d8c27a;color:#f3e3a6!important;font-size:11px!important}
+.tree-node.dimmed{opacity:.32}
+.tree-node.fresh{animation:tree-fresh 1.2s ease-out}
+@keyframes tree-fresh{from{box-shadow:0 0 0 6px #a9edc466}to{box-shadow:0 0 0 0 #a9edc400}}
+.tree-panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;display:grid;gap:10px;align-content:start}
+.tree-panel h3{font-size:24px;margin:0}.tree-panel .tree-actions{margin-top:6px}.tree-panel .tree-review{padding:16px}
+.tree-relations{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:4px 0;font-size:13px}
+.tree-relations dt{color:#b9cec1}.tree-relations dd{margin:0}
+.network-member .tree-link{display:inline;min-height:0;padding:0;border:0;background:none;color:#a9edc4;text-decoration:underline;font:inherit;cursor:pointer}
+.network-member .tree-link:hover{background:none;color:#fff}
+.tree-form h3{font-size:20px}.kin-more summary{cursor:pointer;font-weight:600;padding:6px 0}
+.tree-focus{display:grid;gap:18px}.focus-group h3{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#b9cec1;margin:0 0 8px}
+.focus-row{display:flex;flex-wrap:wrap;gap:10px}.focus-row .kin-note{margin:0}
+.network-member .tree-node.tree-mini{width:auto;height:auto;flex:1 1 140px;min-height:0}
+.focus-center .focus-row{padding:12px;border-radius:14px;border:1px solid #1d4a30;background:#03100a}
+.focus-all summary{cursor:pointer;font-weight:600;padding:8px 0}.focus-all .focus-row{margin-bottom:14px}
+@media (min-width:761px){.tree-focus{display:none}}
+@media (min-width:761px) and (max-width:1023px){.tree-layout{grid-template-columns:1fr}.tree-panel{position:static;max-height:none}}
+@media (max-width:760px){.tree-layout{grid-template-columns:1fr}.tree-canvas{display:none}.tree-panel{position:static;max-height:none}.tree-toolbar label{max-width:none}}
+@media (prefers-reduced-motion:reduce){.tree-node{transition:none}.network-member .tree-node.selected{transform:none}.tree-node.fresh{animation:none}}

@@ -121,6 +121,22 @@ select public.test_assert(public.test_denied(format('select public.tree_action(%
 select public.tree_action(public.v('fam'),'approve_claim',jsonb_build_object('user_id','00000000-0000-0000-0000-000000000033'));
 select public.test_assert((select person_id=public.v('child') from public.memberships where user_id='00000000-0000-0000-0000-000000000033'),'owner confirms the claim');
 
+-- Adding a new parent for someone already in the tree: both records must be allowed.
+select public.keep('ownerParent',public.save(jsonb_build_object('name','Fictional owner parent','life_status','living','parent_of',public.v('owner'))));
+select public.test_assert((select public.v('ownerParent')=any(parents) from public.people where id=public.v('owner')),'a parent for your own place applies directly');
+select public.keep('momParent',public.save(jsonb_build_object('name','Fictional second parent','life_status','living','parent_of',public.v('mom'))));
+select public.test_assert((select count(*)=0 from public.people where name='Fictional second parent'),'a parent for someone else''s linked record waits for them');
+select public.test_assert((select proposed_record->>'child_of'=public.v('mom')::text from public.tree_contributions where id=public.v('momParent')),'the proposal names the child');
+select public.test_assert(public.test_denied(format('select public.save(%L)',jsonb_build_object('name','Loop','parents',jsonb_build_array(public.v('mom')),'parent_of',public.v('grandma')))),'a new parent cannot descend from the child');
+select public.test_assert(public.test_denied(format('select public.save(%L)',jsonb_build_object('id',public.v('mom'),'version',3,'name','Fictional mother','parent_of',public.v('grandma')))),'only a new person can be added as a parent');
+select public.test_as('32');
+select public.test_assert((select count(*)=1 from public.tree_contributions where id=public.v('momParent')),'the person whose record changes sees the proposal');
+select public.tree_action(public.v('fam'),'approve',jsonb_build_object('id',public.v('momParent')));
+select public.test_assert((select p.id=any(m.parents) and p.added_by='00000000-0000-0000-0000-000000000031' from public.people p, public.people m where p.name='Fictional second parent' and m.id=public.v('mom')),'approval adds the parent, credited to the contributor, and links them');
+select public.keep('ggp',public.save(jsonb_build_object('name','Fictional great-grandparent','life_status','deceased','source_note','Fictional','parent_of',public.v('grandma'))));
+select public.test_assert((select count(*)=0 from public.people where name='Fictional great-grandparent'),'a grandchild cannot add a memorial great-grandparent directly');
+select public.test_as('31');
+
 -- Removing a member ends their invitations and profile.
 select public.family_action(public.v('fam'),'remove_member','{"user_id":"00000000-0000-0000-0000-000000000034"}');
 select public.test_assert((select revoked_at is not null from public.list_invitations(public.v('fam')) where email='cousin@example.test'),'removed member''s invitation is revoked');

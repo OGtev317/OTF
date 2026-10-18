@@ -1,7 +1,7 @@
 // The fictional demo runs the real family app (pilot.js) against this in-browser stand-in for
 // Supabase, so the demo always looks and behaves like the signed-in app. Records are fictional
 // and stay in this browser. The rules mirror the database: kinship.js decides who may change what.
-import { mayApply } from "./kinship.js";
+import { mayAdd, mayApply } from "./kinship.js";
 
 const KEY = "roots-demo-v1", ME = "demo-you", FAMILY = "demo-bennetts";
 const PARENT_KINDS = ["biological", "adoptive", "step", "guardian", "unspecified"];
@@ -176,15 +176,21 @@ function treeAction(fid, action, payload = {}) {
     if (old && old.version !== Number(payload.version || 0)) fail("This person changed. Refresh and reopen the record before editing.");
     target ||= uid();
     const proposed = treeRecord(fid, target, { ...(old || {}), ...payload });
+    // A new person can be added as the parent of someone already in the tree.
     let extra = "";
-    if (payload.my_parent) {
-      if (old) fail("To add an existing relative as your parent, edit your own record");
-      if (!me) fail("Link your account to your place in the tree first");
-      extra = me;
+    if (payload.my_parent) { if (!me) fail("Link your account to your place in the tree first"); extra = me; }
+    else if (payload.parent_of) extra = payload.parent_of;
+    if (extra) {
+      if (old) fail("A new parent is added as a new person. To link someone already in the tree as a parent, edit the child’s record.");
+      const kid = db.people.find((p) => p.id === extra && p.family_id === fid) || fail("Person unavailable");
+      if (kid.parents.length >= 8) fail("Invalid or duplicate parents");
+      const above = new Set();
+      for (const stack = [...proposed.parents]; stack.length; ) { const x = stack.pop(); if (!above.has(x)) { above.add(x); stack.push(...(db.people.find((p) => p.id === x)?.parents || [])); } }
+      if (above.has(extra) || proposed.partners.includes(extra)) fail("This relationship would create an ancestry loop");
     }
     if (proposed.life_status === "deceased" && db.memberships.some((m) => m.family_id === fid && m.person_id === target))
       fail("This person’s account is linked to the tree. The link must be removed before they can be recorded as deceased.");
-    if (mayApply(rules(fid), ME, owner(fid), target, old, proposed, extra)) {
+    if (old ? mayApply(rules(fid), ME, owner(fid), target, old, proposed) : mayAdd(rules(fid), ME, owner(fid), target, proposed, extra)) {
       applyPerson(fid, target, proposed, ME);
       if (extra) addParent(fid, extra, target);
       return target;
@@ -192,7 +198,7 @@ function treeAction(fid, action, payload = {}) {
     const mine = db.tree_contributions.filter((c) => c.family_id === fid && c.submitted_by === ME && c.status === "pending");
     if (old && mine.some((c) => c.person_id === target)) fail("You already have a pending edit for this relative. Withdraw it before submitting another.");
     if (mine.length >= 20) fail("You have 20 pending edits. Wait for review or withdraw one.");
-    const proposal = { id: uid(), family_id: fid, person_id: old?.id || null, submitted_by: ME, base_version: old?.version || 0, before_record: old ? structuredClone(old) : {}, proposed_record: { ...proposed, id: target, ...(extra ? { child_of_submitter: extra } : {}) }, status: "pending", submitted_at: now(), reviewed_by: null, reviewed_at: null, review_note: "" };
+    const proposal = { id: uid(), family_id: fid, person_id: old?.id || null, submitted_by: ME, base_version: old?.version || 0, before_record: old ? structuredClone(old) : {}, proposed_record: { ...proposed, id: target, ...(extra ? { child_of: extra } : {}) }, status: "pending", submitted_at: now(), reviewed_by: null, reviewed_at: null, review_note: "" };
     db.tree_contributions.push(proposal);
     return proposal.id;
   }
@@ -204,16 +210,19 @@ function treeAction(fid, action, payload = {}) {
     } else {
       const old = c.person_id ? db.people.find((p) => p.id === c.person_id) : undefined;
       const target = c.person_id || c.proposed_record.id;
-      const extra = c.person_id ? "" : db.memberships.find((m) => m.family_id === fid && m.user_id === c.submitted_by && m.person_id && m.person_id === c.proposed_record.child_of_submitter)?.person_id || "";
+      const named = c.person_id ? "" : c.proposed_record.child_of || c.proposed_record.child_of_submitter || "";
+      const extra = named && db.people.some((p) => p.id === named && p.family_id === fid) ? named : "";
+      const allowed = (proposed) => (old ? mayApply(rules(fid), ME, owner(fid), target, old, proposed, "", c.submitted_by) : mayAdd(rules(fid), ME, owner(fid), target, proposed, extra, c.submitted_by));
       if (action === "approve") {
         if (c.submitted_by === ME) fail("Someone else needs to approve your edit");
         if (!db.memberships.some((m) => m.family_id === fid && m.user_id === c.submitted_by)) fail("The contributor is no longer a family member. Reject this edit.");
         if (c.person_id && (!old || old.version !== c.base_version)) fail("This record changed after the edit was submitted. Reject it and request a fresh edit.");
+        if (named && !extra) fail("The person this parent was proposed for is no longer in the tree. Decline this proposal.");
         const proposed = treeRecord(fid, target, c.proposed_record);
-        if (!mayApply(rules(fid), ME, owner(fid), target, old, proposed, extra, c.submitted_by)) fail("Only an immediate relative with a linked account, the person themselves, or a family owner for other records can approve this edit.");
+        if (!allowed(proposed)) fail("Only an immediate relative with a linked account, the person themselves, or a family owner for other records can approve this edit.");
         applyPerson(fid, target, proposed, c.submitted_by);
         if (extra) addParent(fid, extra, target);
-      } else if (!owner(fid) && !mayApply(rules(fid), ME, false, target, old, c.proposed_record, extra, c.submitted_by)) fail("Only a family owner or someone who could approve this edit can reject it");
+      } else if (!owner(fid) && !allowed(c.proposed_record)) fail("Only a family owner or someone who could approve this edit can reject it");
     }
     Object.assign(c, { status: { approve: "approved", reject: "rejected", withdraw: "withdrawn" }[action], reviewed_by: ME, reviewed_at: now(), review_note: payload.note || "" });
     return c.id;

@@ -4,6 +4,20 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+
+## Connected family tree (2026-10-18)
+
+The Family tree tab is now a connected tree instead of a list of cards.
+
+- **Layout** (`tree-layout.js`): generations come from recorded parent links; people without recorded parents sit beside their partner or just above their children; rows keep siblings together and put someone who married in right after their partner. Lines (SVG attributes only, no inline styles, per the CSP) join parents to children (one line from between a couple) and partners; the selected person's lines are lit, pending ones dashed. Rows wider than the canvas scroll sideways with a hint; the tree tab lifts the 850px content limit, and the panel moves below the tree from 761–1023px.
+- **Phones (≤760px)**: a focus view of the selected person's parents, partners, brothers and sisters, and children, plus an "Everyone in the tree" list. Tapping someone moves the focus.
+- **Panel** for the selected person: dates in words and ages, relationships as links, keepers of memorials, source, life profile, pending edits with approve/decline, and Edit, Add parent, Add child, Add partner, This is me. The add/edit form opens in the panel, offers only parents that cannot make a loop, and says before saving whether the change applies at once or who must approve it (`approvalNote`).
+- **Pending changes in place**: proposed new relatives are dashed cards marked "Awaiting approval"; records with a pending edit are marked. "Waiting for you" at the top lists claims to confirm and proposals you can approve, plus your own proposals.
+- Search (dims others, Enter selects), branch filter (dims), and the rules in a short collapsible list. Motion is brief and off under reduced-motion.
+- **Database** `20261022010000_add_parent.sql` (additive): `tree_action` accepts `parent_of` (any person), not only `my_parent`; the addition applies only when the caller may add the new person and change the child's record (`private.may_add`), otherwise it is a proposal (`child_of`) that someone who may do both approves. `kinship.js` (`mayAdd`) and `demo-backend.js` mirror it.
+
+Validation: syntax checks, 15 browser test files (rewritten `tests/tree.test.js`, new layout/approval tests in `tests/tree-view.test.js`, updated demo and loading tests), all four PostgreSQL suites including the new add-parent cases, build, and the built demo in Chromium and WebKit at 1280 and 390 wide (six lines drawn, approval note, pending card, no overflow or errors).
+
 ## Email live; demo now runs the real app (2026-10-18)
 
 - **Email:** Resend domain `mail.otfroots.com` (us-east-1) verified with DKIM, SPF MX/TXT and return-path CNAME records in Cloudflare (DNS only), plus `_dmarc.otfroots.com` `v=DMARC1; p=none;`. Supabase custom SMTP: `smtp.resend.com:465`, user `resend`, sender `OTF Roots <no-reply@mail.otfroots.com>`, password = a Resend send-only key restricted to that domain (created by CLI straight to the owner's clipboard, never displayed or stored; two lost copies were deleted). The owner set the token-hash templates from `supabase/templates/`; confirmation and reset links were confirmed working from a phone, including on a different device. The temporary Cloudflare DNS token was removed from the keychain; the owner should delete it in Cloudflare (it could see four zones). The "email onboarding is being set up" notices are removed.

@@ -2,7 +2,8 @@ import { test, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 // The demo runs the real app (pilot.js) on fictional records kept in this browser.
 const status = () => document.querySelector('#status').textContent;
-const card = (name) => [...document.querySelectorAll('.relative')].find((c) => c.querySelector('h2').textContent === name);
+const node = (name) => [...document.querySelectorAll('.tree-canvas .tree-node')].find((n) => n.querySelector('strong').textContent === name);
+const panel = () => document.querySelector('#tree-panel');
 test('the demo is the signed-in app with a fictional family, following the same rules', async () => {
   const page = new DOMParser().parseFromString(readFileSync('demo.html', 'utf8'), 'text/html');
   document.body.innerHTML = page.body.innerHTML;
@@ -22,26 +23,40 @@ test('the demo is the signed-in app with a fictional family, following the same 
 
   document.querySelector('[data-view=tree]').click();
   expect(document.querySelector('#you').textContent).toContain('You are Jordan Bennett');
-  expect(card('Rose Bennett').textContent).toContain('Your grandparent');
-  expect(card('Rose Bennett').textContent).toContain('Kept by immediate family: Leo & Maya');
-  expect(card('Rose Bennett').querySelector('[data-edit]').textContent).toBe('Suggest an edit');
-  expect(card('Ava Bennett').textContent).toContain('Your first cousin');
-  expect(card('Leo Bennett').textContent).toContain('Your aunt or uncle');
+  expect([...document.querySelectorAll('.tree-gen-label')].map((h) => h.textContent)).toEqual(['Your grandparents’ generation', 'Your parents’ generation', 'Your generation']);
+  expect(node('Ava Bennett').textContent).toContain('Your first cousin');
+  expect(node('Leo Bennett').textContent).toContain('Your aunt or uncle');
+  expect(document.querySelector('#tree-attention h3').textContent).toBe('Waiting for you (2)');
 
   // As a grandchild you cannot change Grandma Rose's memorial directly.
-  card('Rose Bennett').querySelector('[data-edit]').click();
+  node('Rose Bennett').click();
+  expect(panel().textContent).toContain('Your grandparent');
+  expect(panel().textContent).toContain('Kept by immediate family: Leo & Maya');
+  expect(panel().textContent).toContain('Died November 2, 2019, aged 81');
+  panel().querySelector('[data-edit]').click();
+  expect(document.querySelector('#person-approval').textContent).toBe('This will be sent to Leo & Maya for approval. The tree stays as it is until then.');
   document.querySelector('#person [name=story]').value = 'A new memory of Rose';
   document.querySelector('#person button').click();
   await vi.waitFor(() => expect(status()).toContain('Edit submitted for approval'));
-  expect(card('Rose Bennett').textContent).not.toContain('A new memory of Rose');
+  expect(node('Rose Bennett').textContent).toContain('Edit awaiting approval');
 
   // As the owner you approve Leo's suggestion and confirm who Ava is.
-  document.querySelector('button[value=approve]').click();
+  node('James Bennett').click();
+  panel().querySelector('button[value=approve]').click();
   await vi.waitFor(() => expect(status()).toContain('Edit approved'));
-  expect(card('James Bennett').textContent).toContain('county fair');
+  expect(panel().textContent).toContain('county fair');
   document.querySelector('[data-approve-claim]').click();
   await vi.waitFor(() => expect(status()).toBe('Link confirmed.'));
-  expect(card('Ava Bennett').textContent).toContain('Linked to Ava’s account');
+  node('Ava Bennett').click();
+  expect(panel().textContent).toContain('Linked to Ava’s account');
+
+  // Adding a child of Maya, a living relative, applies at once.
+  node('Maya Bennett').click();
+  panel().querySelector('[data-add=child]').click();
+  document.querySelector('#person [name=name]').value = 'Robin Bennett';
+  document.querySelector('#person button').click();
+  await vi.waitFor(() => expect(status()).toBe('Relative saved to your family tree.'));
+  expect(node('Robin Bennett').textContent).toContain('Your brother or sister');
 
   document.querySelector('[data-view=events]').click();
   expect(document.querySelector('#family-content').textContent).toMatch(/Sunday at Maya’s[\s\S]*Recent gatherings/);

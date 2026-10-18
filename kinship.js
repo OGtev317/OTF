@@ -110,3 +110,22 @@ export function mayApply({ people, memberships }, userId, isOwner, target, old, 
   if (claimant && claimant !== userId && claimant !== consent) return false;
   return Boolean(touched.size || claimant || !old || isOwner);
 }
+
+/** Mirror of private.may_add: a new person, added on their own or as the parent of `child`. */
+export function mayAdd(snap, userId, isOwner, target, record, child = "", consent = "") {
+  if (!mayApply(snap, userId, isOwner, target, undefined, record, child, consent)) return false;
+  if (!child) return true;
+  const kid = snap.people.find((p) => p.id === child);
+  return Boolean(kid) && mayApply(snap, userId, isOwner, child, kid, { ...kid, parents: [...ids(kid.parents), target] }, "", consent);
+}
+
+/** Everyone descended from `id` through recorded parent links (any kind). */
+export function descendantsOf(people, id) {
+  const out = new Set();
+  for (let frontier = [id]; frontier.length; ) {
+    const next = [];
+    for (const p of people) if (!out.has(p.id) && ids(p.parents).some((x) => frontier.includes(x))) { out.add(p.id); next.push(p.id); }
+    frontier = next;
+  }
+  return out;
+}

@@ -1,7 +1,8 @@
 import { configured, demo, supabase } from "./supabase-client.js";
 const signOutButton = `<button class="quiet" id="logout">${demo ? "Leave demo" : "Sign out"}</button>`;
 import { decorateWelcome, decorateMember } from "./memory-scene.js";
-import { treeView } from "./tree-view.js";
+import { treeView, approvalNote } from "./tree-view.js";
+import { drawTreeLines } from "./tree-layout.js";
 import { relationTo } from "./kinship.js";
 import { familyFeed } from "./family-feed.js";
 const root = document.querySelector("#pilot");
@@ -22,6 +23,10 @@ let session,
   mode = "signin",
   editing = null,
   treeBranch = "",
+  // Family tree tab: the selected person, an addition in progress ({mode, of}) and the search text.
+  treeSelected = "",
+  treeAdding = null,
+  treeQuery = "",
   loading = false,
   loadId = 0,
   // The feed shows the newest posts first; older ones load on request.
@@ -136,6 +141,9 @@ async function loadFamily() {
     snapshot = null;
     editing = null;
     treeBranch = "";
+    treeSelected = "";
+    treeAdding = null;
+    treeQuery = "";
     await refreshFamilies();
     await loadFamily();
     if (lost) removedFrom = lost;
@@ -161,7 +169,7 @@ function feed() {
   return familyFeed(snapshot, session.user.id, morePosts);
 }
 function tree() {
-  return treeView({ ...snapshot, contributions: snapshot.tree_contributions }, editing, owner(), session.user.id, treeBranch);
+  return treeView({ ...snapshot, contributions: snapshot.tree_contributions }, editing, owner(), session.user.id, treeBranch, { selected: treeSelected, adding: treeAdding, query: treeQuery });
 }
 function events() {
   const gathering = (e) => `<article class="card"><h2>${esc(e.title)}</h2><small>${esc(e.event_date)} · All-day gathering</small><p class="post-body">${esc(e.detail)}</p></article>`;
@@ -203,7 +211,7 @@ function formKey(form) {
   return form.id ? `#${form.id}` : form.dataset.comment ? `form[data-comment="${form.dataset.comment}"]` : form.dataset.treeReview ? `form[data-tree-review="${form.dataset.treeReview}"]` : "";
 }
 function controlKey(el) {
-  for (const attr of ["data-react", "data-view", "data-edit", "data-remove", "data-revoke", "data-withdraw", "data-claim", "data-unlink", "data-approve-claim", "data-decline-claim"])
+  for (const attr of ["data-react", "data-view", "data-edit", "data-remove", "data-revoke", "data-withdraw", "data-claim", "data-select", "data-add", "data-unlink", "data-approve-claim", "data-decline-claim"])
     if (el.hasAttribute(attr)) return `[${attr}="${el.getAttribute(attr)}"]`;
   if (el.id) return `#${el.id}`;
   const form = el.closest("form"), scope = form && formKey(form);
@@ -235,8 +243,27 @@ function render() {
     if (el && !el.value) el.value = value;
   }
   updatePostCount();
-  if (active) root.querySelector(active)?.focus({ preventScroll: true });
+  if (view === "tree") drawTreeLines(root);
+  if (active) {
+    // The tree shows people twice (wide view and phone view); focus the visible copy.
+    const matches = [...root.querySelectorAll(active)];
+    (matches.find((el) => el.getClientRects().length) || matches[0])?.focus({ preventScroll: true });
+  }
 }
+// Scrolls a wide generation row sideways so the selected person is visible.
+function revealSelected() {
+  const canvas = root.querySelector(".tree-canvas"), node = canvas?.querySelector(".tree-node.selected");
+  if (!node || getComputedStyle(canvas).display === "none") return;
+  const box = canvas.getBoundingClientRect(), r = node.getBoundingClientRect();
+  if (r.left < box.left || r.right > box.right) canvas.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
+}
+// Tree lines follow the cards, so redraw them when the page width changes or fonts load.
+let lineFrame = 0;
+addEventListener("resize", () => {
+  cancelAnimationFrame(lineFrame);
+  lineFrame = requestAnimationFrame(() => view === "tree" && drawTreeLines(root));
+});
+document.fonts?.ready.then(() => view === "tree" && drawTreeLines(root));
 function paint() {
   if (!session || mode === "reset") return authScreen();
   decorateMember();
@@ -262,7 +289,7 @@ function paint() {
     )
     .join(
       "",
-    )}</nav><section id="family-content">${view === "tree" ? tree() : view === "events" ? events() : view === "members" ? members() : feed()}</section>`;
+    )}</nav><section id="family-content" data-view="${view}">${view === "tree" ? tree() : view === "events" ? events() : view === "members" ? members() : feed()}</section>`;
 }
 async function run(task) {
   if (loading) return;
@@ -294,6 +321,38 @@ async function mutate(action, payload, form) {
     savedForm = "";
   }
   report("Saved to your family space.");
+}
+// The tree form's fields as a save request. "Their relationship to you" becomes ordinary links;
+// "my parent" and "Add parent" add the new person as a parent of an existing record.
+function personPayload(form) {
+  const fields = new FormData(form), data = Object.fromEntries(fields), me = myPerson();
+  const parents = fields.getAll("parents"), partners = fields.getAll("partners"), parent_kinds = {};
+  for (const id of parents) if (fields.get(`kind:${id}`) && fields.get(`kind:${id}`) !== "unspecified") parent_kinds[id] = fields.get(`kind:${id}`);
+  const relation = data.relation_to_me;
+  if (relation === "child" && !parents.includes(me)) parents.push(me);
+  if (relation === "partner" && !partners.includes(me)) partners.push(me);
+  if (relation === "sibling") {
+    const mine = snapshot.people.find((p) => p.id === me)?.parents || [];
+    if (!mine.length) throw new Error("Add your own parents to your record first, so brothers and sisters are linked through them.");
+    for (const id of mine) if (!parents.includes(id)) parents.push(id);
+  }
+  return {
+    name: data.name, branch: data.branch, life_status: data.life_status, birth_date: data.birth_date, death_date: data.death_date,
+    story: data.story, source_note: data.source_note, parents, partners, parent_kinds,
+    ...(relation === "parent" ? { my_parent: true } : data.parent_of ? { parent_of: data.parent_of } : {}),
+    ...(editing ? { id: editing.id, version: editing.version } : {}),
+  };
+}
+// Before saving, say whether a change applies at once or who must approve it.
+function updateApproval(form) {
+  const note = form.querySelector("#person-approval");
+  if (!note) return;
+  try {
+    const payload = personPayload(form);
+    note.textContent = approvalNote({ people: snapshot.people, memberships: snapshot.memberships }, session.user.id, owner(), editing, { ...(editing || {}), ...payload }, payload.parent_of || (payload.my_parent ? myPerson() : ""));
+  } catch (error) {
+    note.textContent = error.message;
+  }
 }
 document.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -357,6 +416,9 @@ document.addEventListener("submit", (event) => {
       if (form.id === "join-family") keepInvite("");
       editing = null;
       treeBranch = "";
+      treeSelected = "";
+      treeAdding = null;
+      treeQuery = "";
       postLimit = 20;
       inviteResult = null;
       await refreshFamilies();
@@ -367,33 +429,18 @@ document.addEventListener("submit", (event) => {
       await mutate("comment", { ...data, post_id: form.dataset.comment }, form);
     else if (form.id === "event") await mutate("event", data, form);
     else if (form.id === "person") {
-      const fields = new FormData(form), me = myPerson();
-      const parents = fields.getAll("parents"), partners = fields.getAll("partners"), parent_kinds = {};
-      for (const id of parents) if (fields.get(`kind:${id}`) && fields.get(`kind:${id}`) !== "unspecified") parent_kinds[id] = fields.get(`kind:${id}`);
-      // "Their relationship to you" becomes ordinary links; "my parent" also updates your own record.
-      const relation = data.relation_to_me;
-      if (relation === "child" && !parents.includes(me)) parents.push(me);
-      if (relation === "partner" && !partners.includes(me)) partners.push(me);
-      if (relation === "sibling") {
-        const mine = snapshot.people.find((p) => p.id === me)?.parents || [];
-        if (!mine.length) throw new Error("Add your own parents to your record first, so brothers and sisters are linked through them.");
-        for (const id of mine) if (!parents.includes(id)) parents.push(id);
-      }
-      const payload = {
-        name: data.name, branch: data.branch, life_status: data.life_status, birth_date: data.birth_date, death_date: data.death_date,
-        story: data.story, source_note: data.source_note, parents, partners, parent_kinds,
-        ...(relation === "parent" ? { my_parent: true } : {}),
-        ...(editing ? { id: editing.id, version: editing.version } : {}),
-      };
+      const payload = personPayload(form);
       const id = await result(supabase.rpc("tree_action", { fid: familyId, action: "save", payload }));
       const wasEditing = Boolean(editing);
       editing = null;
+      treeAdding = null;
       form.reset();
       savedForm = '#person';
       try { await loadFamily(); } finally { savedForm = ''; }
       // The answer is the person, or the proposal waiting for approval.
       const proposed = snapshot?.tree_contributions.some((c) => c.id === id);
-      report(!proposed ? "Relative saved to your family tree." : wasEditing ? "Edit submitted for approval. The current record is unchanged." : "Sent for approval. Memorial records, and links to them, are kept by immediate family; it appears once one of them approves.");
+      if (!proposed && snapshot?.people.some((p) => p.id === id)) { treeSelected = id; render(); revealSelected(); }
+      report(!proposed ? "Relative saved to your family tree." : wasEditing ? "Edit submitted for approval. The current record is unchanged." : "Sent for approval. It is shown in the tree with a dashed outline until it is approved.");
     } else if (form.id === "profile") {
       await result(supabase.rpc("tree_action", { fid: familyId, action: "profile", payload: data }));
       savedForm = "#profile";
@@ -428,18 +475,25 @@ document.addEventListener("click", (event) => {
   if (button.dataset.view) {
     view = button.dataset.view;
     editing = null;
+    treeAdding = null;
     render();
     return;
   }
-  if (button.dataset.edit) {
-    editing = snapshot.people.find((p) => p.id === button.dataset.edit);
+  if (button.dataset.select || button.dataset.edit || button.dataset.add || button.id === "cancel-edit") {
+    // Leaving a half-filled tree form asks first.
+    const open = root.querySelector("#person");
+    const typed = open && [...open.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea")].some((el) => el.value !== el.defaultValue);
+    if (typed && button.id !== "cancel-edit" && !confirm("Discard the changes in the open form?")) return;
+    editing = button.dataset.edit ? snapshot.people.find((p) => p.id === button.dataset.edit) : null;
+    treeAdding = button.dataset.add ? { mode: button.dataset.add, of: button.dataset.of || "" } : null;
+    if (button.dataset.select) treeSelected = button.dataset.select;
+    if (button.dataset.edit) treeSelected = button.dataset.edit;
     render();
-    document.querySelector("#person").scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-  if (button.id === "cancel-edit") {
-    editing = null;
-    render();
+    if (editing || treeAdding) {
+      root.querySelector("#person [name=name]")?.focus({ preventScroll: true });
+      root.querySelector("#tree-panel")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    } else if (button.dataset.select && globalThis.matchMedia?.("(max-width: 760px)").matches) root.querySelector(".tree-focus")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    else if (button.dataset.select) revealSelected();
     return;
   }
   const treeAction = ["claim", "unlink", "approveClaim", "declineClaim"].find((key) => button.dataset[key]);
@@ -460,6 +514,9 @@ document.addEventListener("click", (event) => {
       familyId = "";
       editing = null;
       treeBranch = "";
+      treeSelected = "";
+      treeAdding = null;
+      treeQuery = "";
       postLimit = 20;
       inviteResult = null;
       loadId++;
@@ -511,11 +568,21 @@ function updatePostCount() {
 // Composer count and long parent/partner list filtering.
 document.addEventListener("input", (event) => {
   if (event.target.matches('#post textarea')) updatePostCount();
+  if (event.target.id === "tree-search") { treeQuery = event.target.value; render(); return; }
+  if (event.target.closest("#person")) updateApproval(event.target.closest("#person"));
   if (event.target.id !== "relative-filter") return;
   const text = event.target.value.trim().toLowerCase();
   for (const label of root.querySelectorAll(".kin-list .check")) label.hidden = Boolean(text) && !label.textContent.toLowerCase().includes(text) && !label.querySelector("input").checked;
 });
+// Enter in the tree search selects the first matching person.
+document.addEventListener("keydown", (event) => {
+  if (event.target.id !== "tree-search" || event.key !== "Enter") return;
+  event.preventDefault();
+  const first = root.querySelector(".tree-canvas .tree-node:not(.dimmed)");
+  if (first) { treeSelected = first.dataset.select; render(); root.querySelector("#tree-panel")?.scrollIntoView({ block: "nearest" }); }
+});
 document.addEventListener("change", (event) => {
+  if (event.target.closest?.("#person")) updateApproval(event.target.closest("#person"));
   if(event.target.id === 'tree-branch') { treeBranch=event.target.value;render();return; }
   if (event.target.id === "family-select")
     run(async () => {
@@ -523,6 +590,9 @@ document.addEventListener("change", (event) => {
       snapshot = null;
       editing = null;
       treeBranch = "";
+      treeSelected = "";
+      treeAdding = null;
+      treeQuery = "";
       postLimit = 20;
       inviteResult = null;
       render();
@@ -541,6 +611,9 @@ if (configured) {
       familyId = "";
       editing = null;
       treeBranch = "";
+      treeSelected = "";
+      treeAdding = null;
+      treeQuery = "";
       loadId++;
       render();
     }

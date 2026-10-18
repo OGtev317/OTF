@@ -29,7 +29,8 @@ test('loads every relative across pages and shows older posts on request', async
   expect(document.querySelector('#more-posts')).toBeNull();
   expect(document.querySelectorAll('.comment').length).toBe(25);
   document.querySelector('[data-view=tree]').click();
-  expect(document.querySelectorAll('.relative').length).toBe(2345);
+  expect(document.querySelectorAll('.tree-canvas .tree-node').length).toBe(2345);
+  document.querySelector('.tree-toolbar [data-add=free]').click();
   expect(document.querySelectorAll('#person [name=parents]').length).toBe(2345);
   document.querySelector('[data-view=events]').click();
   expect(document.querySelector('#family-content section').textContent).toMatch(/Future reunion[\s\S]*Recent gatherings[\s\S]*Past picnic/);
