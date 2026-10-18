@@ -6,15 +6,19 @@ OTF starts with the founder's own family, with a longer-term goal of welcoming o
 
 ## Project status
 
-The first mobile-friendly web prototype is implemented using HTML, CSS, and browser JavaScript with no package dependencies. It includes a family feed with posts, reactions and replies; editable relatives grouped by generation; and gatherings. Fictional sample data and edits are stored in this browser's local storage. There is no deployed app, authentication service, or shared family database yet.
+The mobile web pilot uses Vite, Supabase Auth/PostgreSQL, and Vercel. It includes accounts, family creation, single-use invitations, membership removal, shared posts/replies/reactions, tree records, and gatherings. The original fictional browser-local prototype remains at `/demo.html`.
+
+Review: https://otf-theta.vercel.app
+
+The Supabase schema is deployed and its isolation tests passed locally and on the hosted database. Email delivery is not configured for external relatives; the user is setting up an email service. Full hosted sign-up, confirmation, recovery, and two-browser account testing remain open. This is a pilot foundation, not a completed family launch.
 
 ## Run locally
 
-With a recent Node.js installation, run `npm run dev` and open http://127.0.0.1:5173 on this computer. The server binds to loopback only; this is not a phone-accessible or hosted URL. Run `npm run check` for syntax checks and `npm test` for relationship and saved-state tests.
+Use Node.js 24+, run `npm ci`, then `npm run dev`. Open the printed local URL. The server binds to loopback only. Without Supabase environment settings the home page explains that account access is unconfigured; `/demo.html` still works. See `.env.example` for browser-safe variable names and [pilot setup](docs/PILOT_SETUP.md) for deployment and authentication details.
 
-The responsive layout adapts to phone widths. Google Fonts is an optional external request with system-font fallbacks. Family records and updates are not sent to a backend. Browser storage is not an encrypted family vault and may be cleared by the browser. Use fictional data only.
+Run `npm run check`, `npm test`, `npm run test:ui`, and `npm run build`. `npm run test:db` runs PostgreSQL isolation tests in a disposable Docker container. Google Fonts is an optional external request with system-font fallbacks. Supabase handles shared pilot records; only `/demo.html` uses browser-local fictional records. Use fictional data until the remaining pilot checks are complete.
 
-The prototype supports unspecified parent relationships; richer relationship types, deletion/undo, invitations, media, and account access controls remain future work.
+Tree relationships are currently unspecified and editable by family owners. Richer relationship types, deletion/export, a restore interface, private photo uploads, and birthday fields remain future work. There are no DAO, voting, wallet, or shared-funds features.
 
 ## First release direction
 
@@ -30,7 +34,7 @@ Start with one family and validate the experience before opening enrollment to m
 
 This repository is public. Family content is intended to be private by default, visible only to authorized members of that family. Public repository visibility does not make family records public.
 
-Use fictional people and stories for development. Never commit real family records, private media, credentials, or database exports. Privacy and access controls are requirements for the future app, not implemented capabilities today.
+Use fictional people and stories for development. Never commit real family records, private media, credentials, or database exports. Database access controls are implemented and tested; that does not establish email delivery, production readiness, or end-to-end encryption.
 
 ## Project documents
 

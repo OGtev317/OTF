@@ -41,7 +41,7 @@ Tree editing must prevent self-links, duplicate links, and ancestry cycles. Unkn
 
 ## Privacy and release requirements
 
-All requirements below are planned, not implemented.
+Database family isolation, expiring single-use invitations, member removal, and private prior-version retention are implemented in the pilot foundation. Email onboarding, export/deletion, and a user-facing restore flow remain open.
 
 - Enforce family membership on the server for every read and write, including media access.
 - Use expiring invitations with explicit acceptance and membership removal.
@@ -62,7 +62,7 @@ All requirements below are planned, not implemented.
 ## Open implementation decisions
 
 - First client selected: mobile-friendly web. The initial local prototype uses dependency-free HTML/CSS/JavaScript.
-- Hosting, authentication, database, and private media storage after platform selection.
+- Hosting selected: Vercel. Authentication and database selected: Supabase. Private media uploads are deferred.
 - Visual identity and pilot invitation policy.
 
-No paid services or deployment have been configured.
+The web app and database are deployed. The user is setting up an email service before relatives can complete email onboarding. Family connection is first; Family Council and shared finances are later phases, outside this milestone.

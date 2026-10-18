@@ -4,7 +4,7 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
-## Current milestone
+## Previous milestone
 
 The user selected mobile-friendly web. A local prototype now includes responsive home/feed, post creation, reactions, comments, gatherings, and a family tree grouped by generation. Relatives can be added and edited with unspecified parent links and story fields. The tree rejects self-links, duplicate parents, missing parents, and ancestry cycles.
 
@@ -17,11 +17,34 @@ Implementation: index.html, style.css, app.js, model.js, and a dependency-free l
 - Chrome UI: created a fictional update and confirmed it persisted after reload; added Alex Bennett under Maya and confirmed generation 3 appeared.
 - Inspected the home screen at a 390 x 844 viewport with mobile bottom navigation. Physical phone testing remains open.
 
+## Current milestone: Supabase + Vercel foundation
+
+User chose Supabase and Vercel, then clarified they will create the **email service** themselves. They did not ask to create a second Supabase project. Do not repeat project creation.
+
+- Live app: https://otf-theta.vercel.app
+- Supabase: OTF, project ref `fmfsctqtnpjjfxmumolk`, region `us-east-2`, existing Zellar organization `grqvyehhehuqjlyekpna`.
+- Vercel: `trbsmith179-9967/otf`, project `prj_nzMJhAMiEYG8puP1i0QRZgcsGtFp`.
+- Stack: Vite + Supabase JS. `pilot.js` is the account-backed app; `app.js` remains the independent fictional demo at `/demo.html`. No demo data is uploaded automatically.
+- Supabase schema applied transactionally through `supabase db query --linked --project-ref ... --file ...`. This is NOT recorded in the CLI migration ledger. Reconcile before adopting `db push`; do not rerun the initial migration against the existing tables.
+- Browser-safe Supabase URL and publishable key configured in Vercel production and preview environments. No service-role key is shipped. No local credentials are retained. Vercel briefly generated an ignored local token file during linking; it was removed.
+- Auth site/redirect URL configured for the live origin and local port 5174; password minimum is 12; email confirmation remains enabled and anonymous sign-ins remain disabled.
+- Accounts have no family access until family creation or invitation acceptance. Database reads use RLS; writes use authorization-checked RPCs. Invitation codes are hashed, single-use, seven-day bearer codes; owners can revoke them and remove members.
+- Tree writes are owner-only, validate parent links/cycles, reject stale versions, and retain prior records privately. UI restore and richer relationship types are not built yet.
+- Vercel GitHub connection failed twice despite a public repository. Direct CLI deployment works; automatic deployment on GitHub pushes is NOT configured.
+
+## New verification
+
+- Syntax checks, five model tests, and the simulated UI account/family/post/invite/signout test passed. Failed writes retain drafts and content is escaped.
+- Real PostgreSQL isolation suite passed in an isolated Docker container AND on hosted Supabase inside a rolled-back transaction. Synthetic test records and test functions did not persist.
+- Anonymous REST reads of the family tables are rejected.
+- Vite production build passed and Vercel deployment reached READY. Live home and demo returned HTTP 200; Chrome showed the connected sign-in form.
+- Full hosted email signup/confirmation/recovery, two independent authenticated browsers, and physical-phone tests are NOT verified.
+
 ## Next work
 
-1. Review the local prototype with the user.
-2. Add relationship types, undo/history, and record management before real family use.
-3. Select authentication, database, private-media storage, and hosting for the private family pilot.
-4. Implement and test server-enforced family isolation before inviting real relatives.
+1. User creates an email service. Configure its SMTP and sender domain in OTF Supabase without exposing credentials in chat or source. Do not disable confirmation to bypass email delivery.
+2. Verify hosted signup, confirmation, login, password recovery, two-browser sharing, and removed-member denial before onboarding relatives. Remove the pending-email banner when this is actually complete.
+3. Resolve Vercel GitHub integration access if automatic deployment is wanted.
+4. Add relationship types, restore/deletion/export, privacy/consent decisions, and private photos/birthdays in subsequent work. Family Council and shared finances remain deferred.
 
 Public source code is authorized. Real family data must not be included in the repository or a public demo.

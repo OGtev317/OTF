@@ -27,3 +27,6 @@ backups/
 # Machine files and logs
 .DS_Store
 *.log
+.env*
+!.env.example
+supabase/.temp/

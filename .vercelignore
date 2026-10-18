@@ -1,0 +1,15 @@
+.git
+.env*
+.vercel
+node_modules
+private
+uploads
+backups
+supabase
+tests
+scripts
+*.test.js
+docs
+OTF_HANDOFF.md
+AGENTS.md
+server.mjs
