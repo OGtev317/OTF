@@ -1,4 +1,5 @@
 import { configured, supabase } from "./supabase-client.js";
+import { decorateWelcome } from "./memory-scene.js";
 const root = document.querySelector("#pilot");
 const status = document.querySelector("#status");
 const esc = (v) =>
@@ -37,12 +38,14 @@ function authScreen() {
   document.querySelector("#account").innerHTML = "";
   if (!configured) {
     root.innerHTML = `<section class="welcome"><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>A little closer.<br>A little more together.</h1><p>One home for family updates, shared memories, and the stories that connect us.</p><div class="card"><h2>Our family pilot is getting ready.</h2><p>Account access is not connected yet. For now, explore OTF with a fictional family.</p><a class="light-button" href="/demo.html">Explore the demo ↗</a></div></section>`;
+    decorateWelcome(root);
     return;
   }
   const signup = mode === "signup",
     recovery = mode === "recover",
     reset = mode === "reset";
   root.innerHTML = `<div class="auth-grid"><section class="welcome"><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>A little closer.<br>A little more together.</h1><p>Catch up on the everyday.<br>Keep the stories that matter.</p><div class="hero"><div><h2>Different branches.<br>Same roots.</h2><p>Your family space starts with an invitation.</p></div></div><a href="/demo.html">Take a look around the fictional demo →</a></section><form id="auth-form" class="card stack"><h2>${signup ? "Create your account" : recovery ? "Find your way back" : reset ? "Choose a new password" : "Welcome back"}</h2><p>${signup ? "An account does not grant family access. Join with an invitation or create your own space." : recovery ? "We’ll send a password-reset link if this email has an account." : reset ? "Use a new password with at least 12 characters." : "Sign in to your family’s space."}</p>${!reset ? field("Email", "email", "email", 'autocomplete="email" maxlength="254"') : ""}${!recovery ? field("Password", "password", "password", `minlength="12" maxlength="128" autocomplete="${signup || reset ? "new-password" : "current-password"}"`) : ""}<button>${signup ? "Create account" : recovery ? "Send reset link" : reset ? "Save new password" : "Sign in"}</button>${!reset ? `<button class="quiet" type="button" data-mode="${signup || recovery ? "signin" : "signup"}">${signup || recovery ? "Back to sign in" : "New here? Create an account"}</button>${!signup && !recovery ? '<button class="quiet" type="button" data-mode="recover">Forgot your password?</button>' : ""}` : ""}</form></div>`;
+  decorateWelcome(root);
 }
 async function refreshFamilies() {
   const current = families.find((f) => f.id === familyId);
@@ -167,6 +170,7 @@ function controlKey(el) {
   return el.name ? `${scope} [name="${el.name}"]` : el.tagName === "BUTTON" ? `${scope} button` : "";
 }
 function render() {
+  document.body.classList.remove('photo-welcome');
   const active = root.contains(document.activeElement) ? controlKey(document.activeElement) : "";
   const drafts = [...root.querySelectorAll(draftForms)]
     .filter((form) => formKey(form) !== savedForm)

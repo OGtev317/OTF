@@ -57,6 +57,13 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 
 ## Next work
 
+### Living tree visual update
+
+User selected earthy/rooted and cozy/nostalgic scrapbook styling, then requested a photographic living-tree background. The welcome page now uses an AI-generated golden-hour oak with hanging keepsakes, slow CSS camera drift and soft light motion, with stationary cream-paper forms. The demo hero uses the same photograph. This is an animated still, not video or a webcam feed. A persistent Pause scenery control and `prefers-reduced-motion` support stop animation. Authenticated reading areas retain quiet paper backgrounds. No real family images are used.
+
+Assets and the exact built-in image-generation prompt are documented in `docs/VISUAL_DESIGN.md`. Desktop and narrow-screen browser checks verified the image and pause state. The four UI tests and production build pass. This update also includes the previously pushed `bb95f4e` email-link/draft fixes; the hosted email templates still need to be applied when email delivery is configured.
+
+
 1. User creates an email service. Configure its SMTP and sender domain in OTF Supabase without exposing credentials in chat or source, and set the two email templates from `supabase/templates/`. Do not disable confirmation to bypass email delivery.
 2. Verify hosted signup, confirmation, login, password recovery, two-browser sharing, and removed-member denial before onboarding relatives. Remove the pending-email banner when this is actually complete.
 3. Resolve Vercel GitHub integration access if automatic deployment is wanted.
