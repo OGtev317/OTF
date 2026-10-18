@@ -1,4 +1,5 @@
 import { test, expect, vi } from 'vitest';
+import { query } from './supabase-mock.js';
 // Links from emails, in a fresh page per case: a token-hash link works on any device;
 // a one-time-code link opened in another browser explains itself instead of failing silently.
 const api = vi.hoisted(() => ({
@@ -6,7 +7,7 @@ const api = vi.hoisted(() => ({
     onAuthStateChange: vi.fn(), getSession: vi.fn(async () => ({ data: { session: null } })),
     verifyOtp: vi.fn(async () => ({ data: { session: { user: { id: 'synthetic-user' } } }, error: null })),
   },
-  from: vi.fn(() => ({ select: () => ({ order: async () => ({ data: [] }), eq: async () => ({ data: [] }) }) })),
+  from: vi.fn(() => query(() => [])),
   rpc: vi.fn(async () => ({ data: [] })),
 }));
 vi.mock('../supabase-client.js', () => ({ configured: true, supabase: api }));

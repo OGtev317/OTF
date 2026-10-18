@@ -37,7 +37,7 @@ try {
     }
   }
   if (!ready) throw new Error("Test database did not become ready");
-  const bootstrap = `create role anon nologin; create role authenticated nologin; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`;
+  const bootstrap = `create role anon nologin; create role authenticated nologin; create schema auth; create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`;
   const sql =
     bootstrap +
     "\n" +
@@ -46,7 +46,7 @@ try {
     readFileSync(
       new URL("../supabase/tests/isolation.sql", import.meta.url),
       "utf8",
-    ) + '\n' + readFileSync(new URL('../supabase/tests/community.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/tree.sql',import.meta.url),'utf8');
+    ) + '\n' + readFileSync(new URL('../supabase/tests/community.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/tree.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/kinship.sql',import.meta.url),'utf8');
   docker(
     [
       "exec",
@@ -62,7 +62,7 @@ try {
     sql,
   );
   console.log(
-    "PASS: PostgreSQL family isolation, Community authorization, and tree additions, reviews, stale versions, cycles, memorial validation, and access revocation.",
+    "PASS: PostgreSQL family isolation, Community authorization, and tree additions, reviews, stale versions, cycles, memorial validation, access revocation, immediate-family memorial stewards, account links, life profiles, and email-bound invitations.",
   );
 } finally {
   // Only the exact unique container created by this invocation is removed.

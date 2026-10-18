@@ -1,17 +1,20 @@
 begin;
-insert into auth.users(id) values ('00000000-0000-0000-0000-000000000021'),('00000000-0000-0000-0000-000000000022'),('00000000-0000-0000-0000-000000000023'),('00000000-0000-0000-0000-000000000024');
+insert into auth.users(id,email,email_confirmed_at) select ('00000000-0000-0000-0000-0000000000'||n)::uuid,'tree'||n||'@example.test',now() from unnest(array['21','22','23','24']) n;
 create function public.test_assert(ok boolean, description text) returns void language plpgsql as $$ begin if ok is distinct from true then raise exception 'FAIL: %',description; end if; end; $$;
 create function public.test_denied(statement text) returns boolean language plpgsql security invoker as $$ begin execute statement; return false; exception when others then return true; end; $$;
 grant execute on function public.test_assert(boolean,text),public.test_denied(text) to anon,authenticated;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000021',true);
 select set_config('test.family',public.create_family('Fictional extended family','Owner')::text,true);
-select set_config('test.parent',public.tree_action(current_setting('test.family')::uuid,'save','{"name":"Fictional parent","branch":"North household","life_status":"deceased","birth_date":"1930-01-01","death_date":"2000-01-01","source_note":"Fictional family recollection"}')::text,true);
-do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family')::uuid),true); end $$;
+-- Memorial records are kept by immediate family: the owner links to their own place first.
+select set_config('test.me',public.tree_action(current_setting('test.family')::uuid,'save','{"name":"Fictional owner","life_status":"living"}')::text,true);
+select public.tree_action(current_setting('test.family')::uuid,'claim',jsonb_build_object('person_id',current_setting('test.me')));
+select set_config('test.parent',public.tree_action(current_setting('test.family')::uuid,'save','{"my_parent":true,"name":"Fictional parent","branch":"North household","life_status":"deceased","birth_date":"1930-01-01","death_date":"2000-01-01","source_note":"Fictional family recollection"}')::text,true);
+do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family')::uuid,'tree22@example.test'),true); end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000022',true);
 do $$ begin perform public.accept_invitation(current_setting('test.invite'),'Member'); end $$;
-select set_config('test.child',public.tree_action(current_setting('test.family')::uuid,'save',jsonb_build_object('name','Fictional child','branch','South household','parents',jsonb_build_array(current_setting('test.parent'))))::text,true);
-select public.test_assert((select count(*)=2 from public.people),'new relative visible immediately');
+select set_config('test.child',public.tree_action(current_setting('test.family')::uuid,'save',jsonb_build_object('name','Fictional child','branch','South household'))::text,true);
+select public.test_assert((select count(*)=3 from public.people),'new relative visible immediately');
 select public.test_assert((select life_status='unknown' and birth_date is null from public.people where id=current_setting('test.child')::uuid),'unknown life details allowed');
 select public.test_assert((select added_by=auth.uid() from public.people where id=current_setting('test.child')::uuid),'server records actual contributor');
 select public.test_assert((select count(*)=0 from public.tree_contributions),'new relative needs no approval');
@@ -34,7 +37,7 @@ select public.tree_action(current_setting('test.family')::uuid,'approve',jsonb_b
 select public.test_assert((select story='A proposed story' and version=2 and death_date='2000-01-01' from public.people where id=current_setting('test.parent')::uuid),'approval applies proposed fields once');
 select public.test_assert(public.test_denied(format('select public.tree_action(%L,''approve'',%L)',current_setting('test.family'),jsonb_build_object('id',current_setting('test.edit')))),'repeat approval denied');
 -- Another member cannot read or review another member's proposals.
-do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family')::uuid),true); end $$;
+do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family')::uuid,'tree24@example.test'),true); end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000024',true);
 do $$ begin perform public.accept_invitation(current_setting('test.invite'),'Another member'); end $$;
 select public.test_assert((select count(*)=0 from public.tree_contributions),'other member cannot read proposals');
@@ -86,5 +89,5 @@ select public.test_assert(public.test_denied('select * from public.tree_contribu
 select public.test_assert(public.test_denied(format('select public.tree_action(%L,''save'',''{"name":"Anonymous"}'')',current_setting('test.family'))),'anonymous cannot add');
 select public.test_assert(public.community_read()->'posts'='[]','tree data not exposed through Community');
 reset role;
-select public.test_assert((select count(*)=3 from private.person_history where family_id=current_setting('test.family')::uuid),'prior records retained only for applied edits');
+select public.test_assert((select count(*)=4 from private.person_history where family_id=current_setting('test.family')::uuid),'prior records retained only for applied edits (three edits and the owner''s own new parent link)');
 rollback;

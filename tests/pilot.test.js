@@ -1,4 +1,5 @@
 import { test, expect, vi } from 'vitest';
+import { query } from './supabase-mock.js';
 const fixture = vi.hoisted(() => ({ rows: { families: [], memberships: [], posts: [], comments: [], reactions: [], people: [], events: [] }, error: null, invite: '', session: { user: { id: 'synthetic-owner' } } }));
 const api = vi.hoisted(() => ({
   auth: {
@@ -6,7 +7,7 @@ const api = vi.hoisted(() => ({
     signInWithPassword: vi.fn(async()=>({data:{session:fixture.session}})),
     signOut: vi.fn(async()=>({data:{}})),
   },
-  from: vi.fn(table=>({select:()=>({order:async()=>({data:fixture.rows[table]}),eq:async()=>({data:fixture.rows[table]})})})),
+  from: vi.fn(table=>query(()=>fixture.rows[table]||[])),
   rpc: vi.fn(async(name,args)=>{
     if(fixture.error)return {error:{message:fixture.error}};
     if(name==='create_family'){
@@ -15,7 +16,7 @@ const api = vi.hoisted(() => ({
       return {data:'family-a'};
     }
     if(name==='list_invitations')return {data:[]};
-    if(name==='create_invitation')return {data:fixture.invite};
+    if(name==='create_invitation'){fixture.invited=args;return {data:fixture.invite};}
     if(name==='family_action'&&args.action==='post')fixture.rows.posts.push({id:'post-a',author_id:'synthetic-owner',body:args.payload.body,created_at:new Date().toISOString()});
     return {data:null};
   }),
@@ -54,12 +55,22 @@ test('account → family → shared post → invitation → sign out; failed wri
   expect(document.querySelector('.comment-form input').value).toBe('Half-written reply');
   // Repeated buttons have names that say who they are for.
   fixture.rows.people.push({id:'person-a',family_id:'family-a',name:'Grandma Example',story:'',parents:[],version:1});
+  document.querySelector('#refresh').click();
+  await vi.waitFor(()=>expect(document.querySelector('#status').textContent).toBe('Up to date.'));
   await vi.waitFor(()=>{document.querySelector('[data-view=tree]').click();expect(document.querySelector('[data-edit]')).not.toBeNull();});
   expect(document.querySelector('[data-edit]').getAttribute('aria-label')).toBe('Edit Grandma Example');
-  fixture.invite=crypto.randomUUID();
+  // An invitation names an address and a place in the tree, and opens in the inviter's email app.
+  fixture.invite='cd'.repeat(32);
   document.querySelector('[data-view=members]').click();
-  document.querySelector('#invite').click();
-  await vi.waitFor(()=>expect(document.querySelector('#invite-code input')?.value).toBe(fixture.invite));
+  document.querySelector('#invite-form [name=email]').value=' relative@example.invalid ';
+  document.querySelector('#invite-form [name=person]').value='person-a';
+  document.querySelector('#invite-form button').click();
+  await vi.waitFor(()=>expect(document.querySelector('#invite-code input')?.value).toBe(`${location.origin}/?invite=${fixture.invite}`));
+  expect(fixture.invited).toEqual({fid:'family-a',invite_email:'relative@example.invalid',invite_person:'person-a'});
+  const mail=document.querySelector('#invite-code a').getAttribute('href');
+  expect(mail).toMatch(/^mailto:relative%40example.invalid\?subject=/);
+  expect(decodeURIComponent(mail)).toContain('as Grandma Example');
+  expect(decodeURIComponent(mail)).toContain('only when you sign up or sign in with relative@example.invalid');
   // A pasted code with spaces and a line break is cleaned; an incomplete one is refused before any request.
   document.querySelector('details').open=true;
   const join=document.querySelector('#join-family');

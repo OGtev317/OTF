@@ -1,6 +1,6 @@
 -- Synthetic UUIDs are records, not accounts, passwords, or access credentials.
 begin;
-insert into auth.users(id) values ('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002'),('00000000-0000-0000-0000-000000000003');
+insert into auth.users(id,email,email_confirmed_at) select ('00000000-0000-0000-0000-00000000000'||n)::uuid,'isolation'||n||'@example.test',now() from unnest(array['1','2','3']) n;
 create function public.test_assert(ok boolean, description text) returns void language plpgsql as $$ begin if ok is distinct from true then raise exception 'FAIL: %',description; end if; end; $$;
 create function public.test_denied(statement text) returns boolean language plpgsql security invoker as $$ begin execute statement; return false; exception when others then return true; end; $$;
 grant execute on function public.test_assert(boolean,text),public.test_denied(text) to anon,authenticated;
@@ -16,7 +16,7 @@ select public.test_assert((select count(*)=1 from public.families),'owner reads 
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''person'',%L::jsonb)',current_setting('test.family_a'),jsonb_build_object('id',current_setting('test.parent'),'version',1,'name','Parent','parents',jsonb_build_array(current_setting('test.child'))))),'reject ancestry cycle');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''person'',%L::jsonb)',current_setting('test.family_a'),jsonb_build_object('id',current_setting('test.parent'),'version',0,'name','Stale'))),'reject stale edit');
 -- Store invitation only in transaction-local memory; do not print it.
-do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family_a')::uuid),true); end $$;
+do $$ begin perform set_config('test.invite',public.create_invitation(current_setting('test.family_a')::uuid,'isolation3@example.test'),true); end $$;
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
 select set_config('test.family_b',public.create_family('Test family B','Owner B')::text,true);
@@ -26,7 +26,7 @@ select public.test_assert((select count(*)=0 from public.people),'no cross-famil
 select public.test_assert((select count(*)=0 from public.events),'no cross-family events');
 select public.test_assert((select count(*)=1 from public.memberships),'no cross-family membership roster');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''post'',''{"body":"intrusion"}'')',current_setting('test.family_a'))),'cannot write family A');
-select public.test_assert(public.test_denied(format('select public.create_invitation(%L::uuid)',current_setting('test.family_a'))),'cannot invite into family A');
+select public.test_assert(public.test_denied(format('select public.create_invitation(%L::uuid,''isolation2@example.test'')',current_setting('test.family_a'))),'cannot invite into family A');
 select public.test_assert(public.test_denied(format('select public.list_invitations(%L::uuid)',current_setting('test.family_a'))),'cannot list family A invitations');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''comment'',%L::jsonb)',current_setting('test.family_b'),jsonb_build_object('post_id',current_setting('test.post'),'body','intrusion'))),'cross-family comment foreign key');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''react'',%L::jsonb)',current_setting('test.family_b'),jsonb_build_object('post_id',current_setting('test.post'),'liked',true))),'cross-family reaction rejected');
@@ -42,17 +42,20 @@ select public.family_action(current_setting('test.family_a')::uuid,'comment',jso
 select public.family_action(current_setting('test.family_a')::uuid,'react',jsonb_build_object('post_id',current_setting('test.post'),'liked',true));
 select public.test_assert((select count(*)=1 from public.comments),'member can comment');
 select public.test_assert((select count(*)=1 from public.reactions),'member can react');
-select public.test_assert(public.test_denied(format('select public.create_invitation(%L::uuid)',current_setting('test.family_a'))),'member cannot invite');
+select public.test_assert(public.test_denied(format('select public.create_invitation(%L::uuid,''someone@example.test'')',current_setting('test.family_a'))),'member cannot invite without naming who they are in the tree');
 select public.family_action(current_setting('test.family_a')::uuid,'person','{"name":"Member-added relative"}');
 select public.test_assert((select count(*)=3 from public.people),'member can add a relative immediately');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''remove_member'',''{"user_id":"00000000-0000-0000-0000-000000000001"}'')',current_setting('test.family_a'))),'member cannot remove owner');
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
 select public.family_action(current_setting('test.family_a')::uuid,'remove_member','{"user_id":"00000000-0000-0000-0000-000000000003"}');
-do $$ begin perform set_config('test.revoked',public.create_invitation(current_setting('test.family_a')::uuid),true); perform set_config('test.expired',public.create_invitation(current_setting('test.family_a')::uuid),true); end $$;
+do $$ begin perform set_config('test.revoked',public.create_invitation(current_setting('test.family_a')::uuid,'isolation3@example.test'),true); end $$;
+reset role;
+update private.invitations set revoked_at=now() where token_hash=encode(sha256(convert_to(current_setting('test.revoked'),'UTF8')),'hex');
+set local role authenticated;
+do $$ begin perform set_config('test.expired',public.create_invitation(current_setting('test.family_a')::uuid,'isolation3@example.test'),true); end $$;
 reset role;
 update private.invitations set expires_at=now()-interval '1 day' where token_hash=encode(sha256(convert_to(current_setting('test.expired'),'UTF8')),'hex');
-update private.invitations set revoked_at=now() where token_hash=encode(sha256(convert_to(current_setting('test.revoked'),'UTF8')),'hex');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',true);
 select public.test_assert((select count(*)=0 from public.posts),'removed member loses read access');

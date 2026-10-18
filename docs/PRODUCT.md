@@ -71,7 +71,7 @@ Members can now add relatives immediately. Member edits to existing people, incl
 
 People support household branch labels, explicit unknown/living/deceased status, optional exact birth/death dates, a story, and source/recollection notes. Unknown dates stay blank; approximate dates can be described in the story. Branch labels are organizational only: all members of the family retain the same tree visibility. Separate private family spaces are never automatically merged, and tree/memorial details never flow into public Community.
 
-### Next design: connected genealogy and individual life profiles (not implemented)
+### Connected genealogy and individual life profiles (first slice built 2026-10-18; see the handoff)
 
 User requested a system in which a relative records children and grandchildren, connects to cousins/aunts/uncles, and has an individual profile for their life, work, and things they want family to know.
 
@@ -81,7 +81,8 @@ User requested a system in which a relative records children and grandchildren, 
 - Use names, dates, and shared relatives only to suggest possible duplicate records. Show a comparison for family confirmation before linking or merging. Preserve alternative/conflicting information and provenance; never silently merge on a name/date match. Cross-family linking requires an explicit future consent/access design.
 - Let a person manage their own life-profile fields (bio, work, interests, achievements, family updates) without routing every personal update through genealogy review. Relationship and identity corrections still follow the tree review policy. Public Community profiles remain separate and opt-in.
 - Minimize exposure of living people's exact birth dates, location, and workplace details. Let users choose what their family sees. Children's records need guardian controls and should not be publicly discoverable. Define claim verification, disputed edits, guardianship, account deletion, and per-field privacy before activation.
-- First implementation slice after design approval: typed parent/child links, relationship-path labels, reviewed claim of an existing person, and a private self-managed life profile. Matching suggestions and cross-family connections follow after those controls are tested.
+- First slice, now built: typed parent links and partners, relationship labels derived from recorded links, an owner-confirmed claim of an existing person ("This is me", or automatically from an invitation that names the person), a private self-managed life profile, and memorial records kept by immediate family. Matching suggestions, duplicate review and cross-family connections are still not built.
+- Memorial rule, as the founder asked: only living immediate relatives with linked accounts (parent, child, brother or sister, partner) add or change a person who has died, add links to them, or approve others' proposals for them. Owners are not exempt. If no such relative has joined, proposals wait; an owner can only decline them. Relaxing this (for example, letting owners or grandchildren approve when no immediate relative is on OTF) is a product decision, not yet made.
 
 - First client selected: mobile-friendly web. The initial local prototype uses dependency-free HTML/CSS/JavaScript.
 - Hosting selected: Vercel. Authentication and database selected: Supabase. Private media uploads are deferred.

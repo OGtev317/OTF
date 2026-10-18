@@ -12,3 +12,11 @@
 .tree-warning{background:#f4ecd6;color:#67532b;padding:12px;border-radius:8px}.tree-actions{display:flex;gap:12px;flex-wrap:wrap}
 .tree-actions button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:600px){.tree-date-fields{grid-template-columns:1fr}.tree-comparison th,.tree-comparison td{padding:8px 4px}.tree-review{padding:16px}}
+.kin-label{font-size:13px;font-weight:600;color:#3f6b4f;margin:2px 0}
+.kin-note{font-size:13px;color:#5d6656;margin:10px 0}
+.kin-account{display:block;font-size:12px;color:#68714f;margin:4px 0}
+.kin-you p{margin:6px 0 10px}
+.kin-list .check{flex-wrap:wrap}.kin-list .check select{margin-left:auto;padding:6px 8px;font-size:13px;border-radius:6px;max-width:100%}
+.kin-list .check:has(input:not(:checked)) select{display:none}
+.relative .tree-actions{margin-top:12px}.member .tree-actions{flex-shrink:0}
+.network-member .kin-label{color:#a1dcff}.network-member :is(.kin-note,.kin-account){color:#b9c8d2}
