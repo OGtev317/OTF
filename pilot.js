@@ -2,6 +2,7 @@ import { configured, supabase } from "./supabase-client.js";
 import { decorateWelcome, decorateMember } from "./memory-scene.js";
 import { treeView } from "./tree-view.js";
 import { relationTo } from "./kinship.js";
+import { familyFeed } from "./family-feed.js";
 const root = document.querySelector("#pilot");
 const status = document.querySelector("#status");
 const esc = (v) =>
@@ -151,31 +152,12 @@ function owner() {
   );
 }
 const myPerson = () => snapshot?.memberships.find((m) => m.user_id === session?.user.id)?.person_id || "";
-const author = (id) =>
-  esc(
-    snapshot.memberships.find((m) => m.user_id === id)?.display_name ||
-      "Former family member",
-  );
 function onboarding() {
   const invite = pendingInvite();
   return `${invite ? '<p class="card kin-note">You have an invitation. Join below with the email address it was sent to.</p>' : ""}<div class="columns"><form id="create-family" class="card stack"><h2>Start your family space</h2><p>An empty home for your own family. You’ll be its first owner.</p>${field("Family name", "family_name", "text", 'maxlength="100"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Create family</button></form><form id="join-family" class="card stack"><h2>Invited by a relative?</h2><p>Open the link from your invitation email, or paste its code. It works once, only for the email address it was sent to, and expires after seven days.</p>${field("Invitation code", "code", "text", `autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200" value="${esc(invite)}"`)}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Join family</button></form></div>`;
 }
 function feed() {
-  return `<form id="post" class="card stack"><label>What’s happening in your corner?<textarea name="body" maxlength="2000" required placeholder="A small win, a memory, or just a hello…"></textarea></label><button>Share with family</button></form>${snapshot.posts.length ? "" : '<div class="card empty"><h2>Every family story starts somewhere.</h2><p>Be the first to say hello.</p></div>'}${snapshot.posts
-    .map((p) => {
-      const likes = snapshot.reactions.filter((r) => r.post_id === p.id),
-        liked = likes.some((r) => r.user_id === session.user.id);
-      return `<article class="card"><h3>${author(p.author_id)}</h3><small>${esc(new Date(p.created_at).toLocaleString())}</small><p class="post-body">${esc(p.body)}</p><button class="quiet" data-react="${p.id}" data-liked="${liked}" aria-pressed="${liked}">${liked ? "♥" : "♡"} ${likes.length} · Love this</button>${snapshot.comments
-        .filter((c) => c.post_id === p.id)
-        .map(
-          (c) =>
-            `<p class="comment"><strong>${author(c.author_id)}</strong> ${esc(c.body)}</p>`,
-        )
-        .join(
-          "",
-        )}<form class="comment-form" data-comment="${p.id}"><input name="body" maxlength="500" required aria-label="Reply to ${author(p.author_id)}" placeholder="Leave a little love…"><button>Reply</button></form></article>`;
-    })
-    .join("")}${morePosts ? '<button class="quiet" id="more-posts">Show older posts</button>' : ""}`;
+  return familyFeed(snapshot, session.user.id, morePosts);
 }
 function tree() {
   return treeView({ ...snapshot, contributions: snapshot.tree_contributions }, editing, owner(), session.user.id, treeBranch);
@@ -251,6 +233,7 @@ function render() {
     const el = key && root.querySelector(key);
     if (el && !el.value) el.value = value;
   }
+  updatePostCount();
   if (active) root.querySelector(active)?.focus({ preventScroll: true });
 }
 function paint() {
@@ -267,7 +250,7 @@ function paint() {
     return;
   }
   root.innerHTML = `<div class="family-top"><div><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>${esc(families.find((f) => f.id === familyId)?.name)}</h1></div><label>Family space<select id="family-select">${families.map((f) => `<option value="${f.id}" ${f.id === familyId ? "selected" : ""}>${esc(f.name)}</option>`).join("")}</select></label><button class="quiet" id="refresh">Refresh</button></div><nav class="pilot-nav" aria-label="Family sections">${[
-    ["feed", "Family home"],
+    ["feed", "Family feed"],
     ["tree", "Family tree"],
     ["events", "Gatherings"],
     ["members", "Members"],
@@ -519,8 +502,14 @@ document.addEventListener("click", (event) => {
     else say("");
   });
 });
-// Long parent and partner lists: show only the names that match.
+function updatePostCount() {
+  const input = root.querySelector('#post textarea');
+  const counter = root.querySelector('#post-count');
+  if (input && counter) counter.textContent = `${input.value.length.toLocaleString()} / 2,000`;
+}
+// Composer count and long parent/partner list filtering.
 document.addEventListener("input", (event) => {
+  if (event.target.matches('#post textarea')) updatePostCount();
   if (event.target.id !== "relative-filter") return;
   const text = event.target.value.trim().toLowerCase();
   for (const label of root.querySelectorAll(".kin-list .check")) label.hidden = Boolean(text) && !label.textContent.toLowerCase().includes(text) && !label.querySelector("input").checked;

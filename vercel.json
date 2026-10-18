@@ -2,6 +2,10 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/community.html", "destination": "/", "permanent": false },
+    { "source": "/community", "destination": "/", "permanent": false }
+  ],
   "headers": [
     {
       "source": "/(.*)",

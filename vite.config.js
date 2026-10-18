@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 export default defineConfig({
   build: {
     rollupOptions: {
-      input: { main: resolve("index.html"), demo: resolve("demo.html"), community: resolve("community.html") },
+      input: { main: resolve("index.html"), demo: resolve("demo.html") },
     },
   },
 });

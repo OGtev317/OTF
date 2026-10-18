@@ -1,5 +1,7 @@
 # Community pilot
 
+Status (2026-10-18): paused while Roots focuses on private family posting. This page describes the retained implementation. Community is excluded from the production build; `/community` and `/community.html` redirect to `/`. Existing database records and RPCs are retained, including public read permissions; this update does not decommission the Community API.
+
 Public route: `/community.html`. Anyone may read. Authentication plus a separate public profile and an explicit 18+ self-attestation are required to participate. This is self-declaration, not verified age assurance; no birth date or identity document is collected. Do not onboard children into public participation.
 
 Implemented: 500-character text posts and single-level replies, public display name/bio, likes, chronological cursor pagination, own-post removal, private reports, bilateral signed-in blocking, and operator-controlled suspension. No family records or family names are copied into Community. Public IDs are independent of Auth account IDs; the public RPC never returns email, account IDs, block lists belonging to someone else, or reports. Profile pages can include replies, linked back to their conversation.

@@ -61,9 +61,13 @@ Database family isolation, expiring single-use invitations, member removal, and 
 
 ## Open implementation decisions
 
-### Public Community
+### Public Community (paused)
 
-Alongside private Family Circle, a separate `/community.html` provides public chronological text posts, replies, profiles, and likes. Reading is anonymous; participation requires sign-in, explicit public-profile opt-in, and an 18+ self-attestation. No private family content is published automatically. Reports and signed-in blocking are available; moderation is operator-managed during the pilot. See [Community scope and operator guide](COMMUNITY.md). Photos, following, reposts, and automated moderation are deferred.
+The current product focuses on family connection. Community has been removed from the production website and its old URLs redirect to the private family entry page. Its source and database API are retained; this is a website withdrawal, not deletion of existing public records. The earlier scope remains in [Community scope and operator guide](COMMUNITY.md).
+
+### Private Family feed
+
+Family members post text updates to their selected family, reply and like posts, and load older updates in newest-first order. The composer shows a character count and a family-only visibility reminder. Posts allow 2,000 characters and replies 500. Existing server-side family authorization continues to govern every read and write. Media, reposts and following are deferred.
 
 ### Extended-family contributions
 

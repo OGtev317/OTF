@@ -41,6 +41,13 @@
 .network-member .community-aside h1{font-weight:500}
 .network-member .shell>header{height:auto;min-height:80px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
 .network-member button:disabled{opacity:.5;cursor:not-allowed}
+.feed-heading,.feed-post-header,.feed-post-actions,.feed-compose-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.feed-heading{margin-bottom:22px}.feed-heading h2{margin-bottom:7px}.feed-heading p{margin:0;color:#b9cec1;font-size:13px}
+.feed-privacy{border:1px solid #287d4c;border-radius:30px;padding:7px 12px;font-size:11px;color:#b0ffd0}
+.feed-compose-actions output,.feed-order,.feed-post-header time,.feed-post-actions>span{color:#b9cec1;font-size:12px}
+.feed-order{margin:25px 0 12px}.feed-post-header h3{margin:0;font-size:15px}
+.family-composer textarea{min-height:115px}.family-post .post-body{font-size:16px;line-height:1.7}
+.feed-post-actions{border-top:1px solid #287d4c;padding-top:12px;justify-content:flex-start}
 /* Plain workspace surfaces; animated welcome/login stays unchanged. */
 .network-member :is(.card,.hero,.tree-board,.person-card,dialog,.comment,.community-guide,.sidebar,.shell>header,.pilot-header,.pilot-pending,.demo-note,footer){background:#000;border-color:#287d4c}
 .network-member :is(.card,.hero,.tree-board,.person-card,dialog){border:1px solid #287d4c;box-shadow:none}

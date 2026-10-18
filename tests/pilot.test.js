@@ -37,16 +37,22 @@ test('account → family → shared post → invitation → sign out; failed wri
   document.querySelector('#create-family [name=member_name]').value='Sample owner';
   document.querySelector('#create-family button').click();
   await vi.waitFor(()=>expect(document.querySelector('#post')).not.toBeNull());
+  expect(document.querySelector('#post-privacy').textContent).toContain('Only members of this family');
+  expect(document.querySelector('#post-count').textContent).toBe('0 / 2,000');
   fixture.error='Family access denied';
   document.querySelector('#post textarea').value='Keep this draft';
+  document.querySelector('#post textarea').dispatchEvent(new Event('input',{bubbles:true}));
+  expect(document.querySelector('#post-count').textContent).toBe('15 / 2,000');
   document.querySelector('#post button').click();
   await vi.waitFor(()=>expect(document.querySelector('#status').textContent).toBe('Family access denied'));
   expect(document.querySelector('#post textarea').value).toBe('Keep this draft');
+  expect(document.querySelector('#post-count').textContent).toBe('15 / 2,000');
   fixture.error=null;
   document.querySelector('#post textarea').value='<img src=x onerror=alert(1)>Hello family';
   document.querySelector('#post button').click();
   await vi.waitFor(()=>expect(document.querySelector('.post-body')?.textContent).toContain('<img'));
   expect(document.querySelector('.post-body img')).toBeNull();
+  expect(document.querySelector('#post-count').textContent).toBe('0 / 2,000');
   expect(api.rpc).toHaveBeenCalledWith('family_action',expect.objectContaining({fid:'family-a',action:'post'}));
   // An unsent reply survives another action that redraws the page.
   document.querySelector('.comment-form input').value='Half-written reply';

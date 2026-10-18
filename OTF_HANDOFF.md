@@ -4,6 +4,16 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Family feed focus; Community website paused (2026-10-18)
+
+User requested removing Community and focusing on posting within each family, similar to X. Removed the Community header link and Vite production entry. Vercel redirects `/community.html` and `/community` to `/` (temporary 307). Community source, database records, RPCs and public-read permissions remain retained; this is withdrawal of its website, not API decommissioning or data deletion.
+
+Family home is now Family feed, with a family-only reminder, text composer, live 2,000-character counter, newest-first posts, per-post author/time, likes, reply counts, reply forms and older-post loading. Existing family membership/RLS and authorized RPCs still govern reads/writes. Extracted shared markup into `family-feed.js`; `tests/feed-preview.html` is a fictional visual fixture excluded from deployment. Existing failed-write drafts and focus preservation remain supported; count updates after a redraw.
+
+Validation: syntax, five model tests, twelve UI tests, build and whitespace checks passed. Expanded existing integration test verifies counter/draft behavior and escaping. Disposable PostgreSQL suite passed family isolation, post access, invitation/member revocation and existing tree/profile policies. Desktop and 390px browser review used fictional data, with no horizontal overflow. Hosted authenticated posting/email round trips were not exercised. Sites guidance informed responsive validation while preserving Vercel/Supabase.
+
+Released as Vercel `dpl_8FKBAhBrBYmp1j5ezvccB1SKriuV` (READY) at https://otfroots.com. Both old Community routes returned 307 to `/`; browser verified the redirect reaches family sign-in and there are no Community navigation links. Demo still returns 200. Built output contains only family and demo pages, with no Community HTML/JS bundle.
+
 ## Visible brand simplified to Roots (2026-10-18)
 
 User requested removing OTF and leaving Roots on all pages. Updated all production page wordmarks, accessible home-link names, titles, descriptions, mobile demo header and on-page brand mentions (including invitation text and tree guidance). Removed the Only the Family header tagline. Preserved roots.png, otfroots.com, internal storage keys, package/project identifiers and authentication settings. Hosted email templates were not changed. Sites guidance informed visual verification; no data/access changes.

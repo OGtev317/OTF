@@ -10,7 +10,7 @@ The mobile web pilot uses Vite, Supabase Auth/PostgreSQL, and Vercel. It include
 
 Review: https://otfroots.com (`www.otfroots.com` redirects here; the original Vercel URL remains available).
 
-The public [Community pilot](https://otfroots.com/community.html) is separate from private family spaces: anonymous reading, adult public-profile opt-in, text posts/replies, likes, reporting, and signed-in blocking. See [Community scope and manual moderation](docs/COMMUNITY.md). Media, following, and reposts are deferred; this is a supervised pilot with manual report review, not a general-launch readiness claim.
+Roots is focusing on private family spaces. The Family feed provides text posts (up to 2,000 characters), replies, likes, newest-first ordering and older-post loading. Posts stay inside the selected family. Community is paused: its website is excluded from production and old Community links redirect to sign-in. Existing Community source and database records remain available for a future decision; its database API has not been decommissioned.
 
 The Supabase schema is deployed and its isolation tests passed locally and on the hosted database. Email delivery is not configured for external relatives; the user is setting up an email service. Full hosted sign-up, confirmation, recovery, and two-browser account testing remain open. This is a pilot foundation, not a completed family launch.
 
