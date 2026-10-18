@@ -1,4 +1,4 @@
-/* Welcome-only theme. Private family pages keep their quiet paper surfaces. */
+/* Shared signal geometry and welcome-page theme. */
 .network-backdrop{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#030609}
 .network-welcome{background:#030609;color:#f5f8fc;color-scheme:dark;--green:#b8e5ff;--border:#243846}
 .network-welcome::before{display:none}
@@ -24,7 +24,7 @@ html[data-motion=paused] .signal{animation-play-state:paused}
 .network-welcome .demo-pill{color:#9aafbd}
 .network-welcome .motion-toggle{background:#071018;border-color:#304653;color:#d8f0ff;font-size:11px;min-height:44px}
 .network-welcome .motion-toggle:hover{background:#142734}
-body:not(.network-welcome) .pilot-header .motion-toggle{display:none}
+body:not(.network-welcome):not(.network-member) .pilot-header .motion-toggle{display:none}
 .network-welcome .pilot-pending{background:#0a151de8;border-bottom:1px solid #1e303d;color:#b6c9d5;font-size:11px}
 .network-welcome #pilot{max-width:1280px;min-height:calc(100svh - 202px);padding:90px 48px 120px;display:flex;align-items:center}
 .network-welcome .auth-grid{width:100%;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:115px;align-items:center}

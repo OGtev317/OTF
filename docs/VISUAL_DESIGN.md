@@ -4,7 +4,11 @@
 
 The user replaced the photographic welcome direction with a black page, white text, and light-blue signals moving through the branches, trunk, and roots of a tree. `tree-network.js` generates deterministic decorative SVG geometry; `network-welcome.css` supplies the welcome-only dark theme and CSS stroke-dash animations. The tree has no real family records, account identities, live network status, or data connections. No new image generation, video, or animation dependency is used.
 
-The form stays stationary on a dark panel. Pause/Resume signals shares the existing local `otf-motion-paused` preference. OS reduced-motion disables the signal animation. Authenticated family pages and Community retain their existing styles; the fictional demo retains its garden photograph. The welcome page no longer requests the garden image. The Sites skill guided responsive layout and validation while retaining the existing Vercel workflow.
+The form stays stationary on a dark panel. Pause/Resume signals shares the existing local `otf-motion-paused` preference. OS reduced-motion disables the signal animation. The fictional demo retains its garden photograph. The welcome page no longer requests the garden image. The Sites skill guided responsive layout and validation while retaining the existing Vercel workflow.
+
+## Signed-in individual branch
+
+Authenticated family pages (onboarding, feed, tree, gatherings, members, and load errors) use `network-member.css`: black backgrounds, white text, readable dark panels, and one decorative branch with six moving blue signals. The branch is shared artwork, not the user's verified pedigree; accounts are not yet linked to genealogical people. Section redraws preserve the existing SVG and motion preference. Sign-out and password recovery restore the whole-tree welcome scene. Community keeps its separate appearance. No permissions, family records, or backend behavior changed.
 
 ## Earlier photographic direction (retained for the demo)
 

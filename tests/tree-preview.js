@@ -1,4 +1,6 @@
 import {treeView} from '../tree-view.js';
+import {decorateMember} from '../memory-scene.js';
+decorateMember();
 const people=[
   {id:'ancestor',name:'Evelyn Bennett',parents:[],version:1,branch:'Shared roots',life_status:'deceased',birth_date:'1934-04-12',death_date:'2012-09-08',story:'A fictional grandmother who brought everyone together around the kitchen table.',source_note:'Fictional family recollection for layout testing.'},
   {id:'relative',name:'Jordan Bennett',parents:['ancestor'],version:1,branch:'Bennett household',life_status:'unknown',story:'Their story is waiting to be told.'},

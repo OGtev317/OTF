@@ -29,6 +29,8 @@ test('account → family → shared post → invitation → sign out; failed wri
   document.querySelector('[name=password]').value=crypto.randomUUID();
   document.querySelector('#auth-form button').click();
   await vi.waitFor(()=>expect(document.querySelector('#create-family')).not.toBeNull());
+  expect(document.body.classList.contains('network-member')).toBe(true);
+  expect(document.querySelector('.member-branch')).not.toBeNull();
   expect(api.auth.signInWithPassword).toHaveBeenCalledTimes(1);
   document.querySelector('#create-family [name=family_name]').value='Sample family';
   document.querySelector('#create-family [name=member_name]').value='Sample owner';
@@ -73,4 +75,6 @@ test('account → family → shared post → invitation → sign out; failed wri
   await vi.waitFor(()=>{document.querySelector('#logout')?.click();expect(document.querySelector('#auth-form')).not.toBeNull();});
   expect(document.body.textContent).not.toContain('Sample family');
   expect(document.body.textContent).not.toContain('Hello family');
+  expect(document.body.classList.contains('network-welcome')).toBe(true);
+  expect(document.querySelector('.member-branch')).toBeNull();
 });

@@ -1,5 +1,5 @@
 // Decorative, locally drawn artwork; never populated with private family records.
-import { treeNetwork } from './tree-network.js';
+import { treeNetwork, memberBranch } from './tree-network.js';
 export function memoryScene() {
   return `<div class="memory-scene" aria-hidden="true">
     <span class="scrap-note note-top">a little of yesterday.<br>a little of today.</span>
@@ -19,8 +19,7 @@ export function memoryScene() {
   </div>`;
 }
 export function decorateWelcome(root) {
-  document.body.classList.add('network-welcome');
-  if(!document.querySelector('.network-backdrop')) document.body.insertAdjacentHTML('afterbegin',treeNetwork());
+  setNetworkScene('network-welcome', treeNetwork);
   const welcome = root.querySelector(".welcome");
   if (!welcome) return;
   welcome.querySelector("h1").innerHTML =
@@ -32,6 +31,20 @@ export function decorateWelcome(root) {
   welcome.querySelector(".hero")?.remove();
   updateMotion();
 }
+export function decorateMember() {
+  setNetworkScene('network-member', memberBranch);
+}
+function setNetworkScene(scene, markup) {
+  const backdrop=document.querySelector('.network-backdrop');
+  if (backdrop?.dataset.scene !== scene) {
+    backdrop?.remove();
+    document.body.insertAdjacentHTML('afterbegin',markup());
+    document.querySelector('.network-backdrop').dataset.scene=scene;
+  }
+  document.body.classList.remove('photo-welcome','network-welcome','network-member');
+  document.body.classList.add(scene);
+  updateMotion();
+}
 let paused = false;
 try {
   paused = localStorage.getItem("otf-motion-paused") === "true";
@@ -40,7 +53,7 @@ function updateMotion() {
   document.documentElement.dataset.motion = paused ? "paused" : "playing";
   document.querySelectorAll("[data-motion-toggle]").forEach((button) => {
     button.setAttribute("aria-pressed", String(paused));
-    const scene = document.body.classList.contains('network-welcome') ? 'signals' : 'scenery';
+    const scene = document.body.matches('.network-welcome,.network-member') ? 'signals' : 'scenery';
     button.textContent = `${paused ? 'Resume' : 'Pause'} ${scene}`;
   });
 }

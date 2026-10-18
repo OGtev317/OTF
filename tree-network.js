@@ -1,5 +1,24 @@
 // Decorative geometry only. No accounts, family records, or network traffic.
 const point = (x,y) => `${Math.round(x)} ${Math.round(y)}`;
+export function memberBranch() {
+  // One shared decorative branch, not a claimed or inferred pedigree.
+  const stem='M110 1020 C160 800 210 710 330 600 C480 480 600 420 780 310 C940 220 1100 160 1350 90';
+  const twigs=[
+    'M110 1020 C160 800 210 710 330 600 C260 480 210 400 120 320',
+    'M110 1020 C160 800 210 710 330 600 C480 480 600 420 780 310 C720 190 640 130 560 60',
+    'M110 1020 C160 800 210 710 330 600 C480 480 600 420 780 310 C940 220 1100 160 1350 90',
+    'M110 1020 C160 800 210 710 330 600 C500 660 630 710 850 720',
+    'M110 1020 C160 800 210 710 330 600 C480 480 600 420 780 310 C920 390 1100 430 1370 400',
+    'M110 1020 C160 800 210 710 330 600 C480 480 600 420 780 310 C940 220 1100 160 1170 40',
+  ];
+  const nodes=[[330,600],[780,310],[120,320],[560,60],[1350,90],[850,720],[1370,400],[1170,40]];
+  return `<div class="network-backdrop member-backdrop" aria-hidden="true"><svg class="network-tree member-branch" viewBox="0 0 1440 1000" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+    <g class="network-wires"><path d="${stem}"/>${twigs.map(d=>`<path d="${d}"/>`).join('')}</g>
+    <g class="network-halos">${nodes.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="16"/>`).join('')}</g>
+    <g class="network-nodes">${nodes.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3"/>`).join('')}</g>
+    <g class="network-signals">${twigs.map((d,i)=>`<path class="signal signal-${i}" d="${d}" pathLength="100"/>`).join('')}</g>
+  </svg></div>`;
+}
 export function treeNetwork() {
   const wires=[], routes=[], nodes=[];
   const trunk='M720 690 C700 620 735 565 720 480';

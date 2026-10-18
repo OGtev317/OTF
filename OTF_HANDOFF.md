@@ -57,6 +57,14 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 
 ## Next work
 
+### Signed-in branch background
+
+Extended the dark tree theme to all authenticated family workspace views, onboarding, and load-error screens. A single decorative branch replaces the full welcome tree after sign-in, with six blue signal paths. Cards, comments, forms, selectors, review tables, navigation, and header controls have dark readable surfaces. Scene redraws preserve the SVG; logout/recovery restore the welcome scene. Pause preference and reduced-motion behavior are shared. This does not yet depict a user's actual ancestry or link accounts to tree people. Community/demo are unchanged. No database migration.
+
+Validation: syntax checks, five model tests, eight UI tests including mocked login/logout scene changes and branch redraw/pause persistence, production build, and whitespace checks. Desktop and 389px browser review used the fictional tree fixture; mobile had no horizontal overflow and all six signals ran. Hosted authenticated login remains unverified while email onboarding is pending. Sites skill guided responsive QA, preserving Vercel/Supabase.
+
+Published directly to Vercel: `dpl_A5hZNAu3zm1uwz6Fb4DJcTYUvkCV` reached READY and was aliased to https://otf-theta.vercel.app. Initial deploy returned a transient authorization error; project access was checked and one retry succeeded without credential or permission changes.
+
 ### Dark connection-tree welcome page
 
 User requested a black main page, white text, and a light-blue moving system of connections through a tree's branches and roots. Implemented a welcome-only dark theme and locally generated decorative SVG network in `tree-network.js` / `network-welcome.css`. The welcome headline is “Different branches. One family.” A stationary dark sign-in panel keeps controls readable. No real genealogy, identities, network status, or telemetry populates the background. No database/access changes are part of this update.

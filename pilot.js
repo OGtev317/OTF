@@ -1,5 +1,5 @@
 import { configured, supabase } from "./supabase-client.js";
-import { decorateWelcome } from "./memory-scene.js";
+import { decorateWelcome, decorateMember } from "./memory-scene.js";
 import { treeView } from "./tree-view.js";
 const root = document.querySelector("#pilot");
 const status = document.querySelector("#status");
@@ -162,7 +162,6 @@ function controlKey(el) {
   return el.name ? `${scope} [name="${el.name}"]${el.type==='checkbox' ? `[value="${el.value}"]` : ''}` : el.tagName === "BUTTON" ? `${scope} button` : "";
 }
 function render() {
-  document.body.classList.remove('photo-welcome','network-welcome');
   const sameFamily = Boolean(session && root.dataset.familyId === familyId);
   const oldPerson = sameFamily && savedForm !== '#person' ? root.querySelector('#person') : null;
   const personKey = oldPerson?.dataset.person;
@@ -190,6 +189,7 @@ function render() {
 }
 function paint() {
   if (!session || mode === "reset") return authScreen();
+  decorateMember();
   document.querySelector("#account").innerHTML =
     '<button class="quiet" id="logout">Sign out</button>';
   if (!familyId) {
@@ -223,6 +223,7 @@ async function run(task) {
   } catch (error) {
     if (!snapshot && !root.querySelector("form")) {
       if (session) {
+        decorateMember();
         document.querySelector("#account").innerHTML = '<button class="quiet" id="logout">Sign out</button>';
         root.innerHTML = '<section class="card"><h2>Your family space could not be loaded.</h2><p>Your saved records have not been changed.</p><button id="refresh">Try again</button></section>';
       } else authScreen();

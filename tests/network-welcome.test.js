@@ -5,7 +5,7 @@ test('decorative network mounts once and motion preference survives welcome redr
   document.body.className='';
   localStorage.setItem('otf-motion-paused','true');
   document.body.innerHTML='<header class="pilot-header"></header><main id="pilot"><section class="welcome"><h1>Welcome</h1><span class="eyebrow"></span><p></p><div class="hero"></div></section></main>';
-  const {decorateWelcome}=await import('../memory-scene.js');
+  const {decorateWelcome,decorateMember}=await import('../memory-scene.js');
   const root=document.querySelector('#pilot');
   decorateWelcome(root);
   expect(document.body.classList.contains('network-welcome')).toBe(true);
@@ -26,6 +26,19 @@ test('decorative network mounts once and motion preference survives welcome redr
   expect(toggle.textContent).toBe('Pause signals');
   toggle.click();
   expect(document.documentElement.dataset.motion).toBe('paused');
+  decorateMember();
+  expect(document.body.classList.contains('network-member')).toBe(true);
+  expect(document.body.classList.contains('network-welcome')).toBe(false);
+  expect(document.querySelectorAll('.network-backdrop').length).toBe(1);
+  const branch=document.querySelector('.member-branch');
+  expect(branch.querySelectorAll('.signal').length).toBe(6);
+  expect(toggle.textContent).toBe('Resume signals');
+  decorateMember();
+  expect(document.querySelector('.member-branch')).toBe(branch);
+  decorateWelcome(root);
+  expect(document.querySelector('.member-branch')).toBeNull();
+  expect(document.body.classList.contains('network-member')).toBe(false);
+  expect(document.querySelectorAll('.network-backdrop').length).toBe(1);
   // CSS explicitly disables motion for the OS accessibility preference.
   const css=readFileSync(resolve('network-welcome.css'),'utf8');
   expect(css).toMatch(/prefers-reduced-motion:reduce/);
