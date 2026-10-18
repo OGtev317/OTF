@@ -4,6 +4,17 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Latest operational update: OTF Roots domain (2026-10-18)
+
+- User selected `otfroots.com` and authorized configuration plus commit/push to `main`.
+- Live canonical URL: https://otfroots.com. Both apex and www are verified Vercel project domains. Cloudflare has DNS-only A records for each pointing to `76.76.21.21` (TTL Auto); there were no prior DNS records to overwrite. No mail records or nameservers were changed.
+- `https://www.otfroots.com` returns a 308 redirect to the apex. HTTPS at the apex returns 200; the live browser shows the existing dark animated tree and sign-in form.
+- Hosted Supabase Auth Site URL is now `https://otfroots.com`, verified after reload. Added the exact `https://otfroots.com/` callback; retained the old Vercel and local 5174 callbacks. `supabase/config.toml` mirrors these settings. Email provider setup and hosted email round trips remain unverified.
+- Production remains `dpl_A5hZNAu3zm1uwz6Fb4DJcTYUvkCV`, verified through Vercel project metadata. No new client deploy or database migration was performed. Vercel project metadata still has no GitHub link; pushing `main` does not release it automatically.
+- **Release gate:** the newer kinship client already on `main` needs the unapplied `20261021010000_kinship.sql` migration before deployment. Preserve the working production deployment until that separate release is prepared.
+- Sites and Cloudflare guidance informed domain verification while preserving the chosen Vercel/Supabase stack. See `docs/PILOT_SETUP.md` for the hosted configuration.
+- Validation: syntax checks, five model tests, eleven UI tests, production build, and whitespace checks passed. Apex, Community and demo returned HTTP 200; www returned 308 to apex. No hosted accounts or family data were created or changed for testing.
+
 ## Previous milestone
 
 The user selected mobile-friendly web. A local prototype now includes responsive home/feed, post creation, reactions, comments, gatherings, and a family tree grouped by generation. Relatives can be added and edited with unspecified parent links and story fields. The tree rejects self-links, duplicate parents, missing parents, and ancestry cycles.

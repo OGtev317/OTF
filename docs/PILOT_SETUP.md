@@ -14,6 +14,16 @@ The initial schema is `supabase/migrations/20261018010000_family_pilot.sql`. It 
 
 Set Supabase Auth's site URL to the production origin and allow that exact origin as an authentication redirect. Keep email confirmation enabled. Use the confirmation and recovery templates in `supabase/templates/` (also wired into `supabase/config.toml` for local stacks): their links carry a token hash, so they work when opened on a different device from the one that asked, such as a phone's mail app. Supabase's default links only work in the original browser. Password recovery returns to the root page and presents a new-password form. Avoid wildcard redirect rules for production.
 
+## Production domain (configured 2026-10-18)
+
+- Canonical origin: `https://otfroots.com`, attached to the existing Vercel `otf` project.
+- Cloudflare DNS: A records for `@` and `www`, both `76.76.21.21`, DNS only (proxy off), TTL Auto. Vercel verified both; its newer recommended IP is optional, not a configuration failure. Re-inspect Vercel's current recommendations before future DNS changes.
+- Vercel project-domain setting: `www.otfroots.com` redirects permanently (308) to `otfroots.com`. This is hosted configuration, not a client build redirect.
+- Supabase Auth Site URL: `https://otfroots.com`. Exact allowed callbacks: `https://otfroots.com/`, `https://otf-theta.vercel.app/`, and `http://127.0.0.1:5174/`. Existing callbacks remain valid. The checked-in config mirrors the hosted values; editing it alone does not update hosted Auth.
+- No email provider or mail DNS records were configured. Hosted signup, confirmation, and recovery still need end-to-end testing with the intended email service.
+
+The domain currently serves the existing signed-in-branch deployment. GitHub automatic deployment is not connected. **Do not deploy the newer client on `main` until the kinship migration is applied and verified**, as detailed in `OTF_HANDOFF.md`. Domain setup did not apply database migrations or release that client.
+
 ## Accounts and invitations
 
 An account alone grants no family access. A user can create a family as its owner or redeem an invitation to become a member. Invitations are high-entropy bearer codes: share privately. The database stores only their hashes, accepts them once, and rejects revoked or expired codes. The app does not send invitation messages; the owner shares the code themselves. Owners can remove a member, which blocks subsequent reads and writes. Previously viewed or copied content cannot be recalled.

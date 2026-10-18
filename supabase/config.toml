@@ -1,8 +1,8 @@
 project_id = "otf"
 
 [auth]
-site_url = "https://otf-theta.vercel.app"
-additional_redirect_urls = ["https://otf-theta.vercel.app/", "http://127.0.0.1:5174/"]
+site_url = "https://otfroots.com"
+additional_redirect_urls = ["https://otfroots.com/", "https://otf-theta.vercel.app/", "http://127.0.0.1:5174/"]
 enable_anonymous_sign_ins = false
 minimum_password_length = 12
 

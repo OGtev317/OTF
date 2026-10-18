@@ -8,9 +8,9 @@ OTF starts with the founder's own family, with a longer-term goal of welcoming o
 
 The mobile web pilot uses Vite, Supabase Auth/PostgreSQL, and Vercel. It includes accounts, family creation, single-use invitations, membership removal, shared posts/replies/reactions, tree records, and gatherings. The original fictional browser-local prototype remains at `/demo.html`.
 
-Review: https://otf-theta.vercel.app
+Review: https://otfroots.com (`www.otfroots.com` redirects here; the original Vercel URL remains available).
 
-The public [Community pilot](https://otf-theta.vercel.app/community.html) is separate from private family spaces: anonymous reading, adult public-profile opt-in, text posts/replies, likes, reporting, and signed-in blocking. See [Community scope and manual moderation](docs/COMMUNITY.md). Media, following, and reposts are deferred; this is a supervised pilot with manual report review, not a general-launch readiness claim.
+The public [Community pilot](https://otfroots.com/community.html) is separate from private family spaces: anonymous reading, adult public-profile opt-in, text posts/replies, likes, reporting, and signed-in blocking. See [Community scope and manual moderation](docs/COMMUNITY.md). Media, following, and reposts are deferred; this is a supervised pilot with manual report review, not a general-launch readiness claim.
 
 The Supabase schema is deployed and its isolation tests passed locally and on the hosted database. Email delivery is not configured for external relatives; the user is setting up an email service. Full hosted sign-up, confirmation, recovery, and two-browser account testing remain open. This is a pilot foundation, not a completed family launch.
 
