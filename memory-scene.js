@@ -1,5 +1,5 @@
 // Decorative, locally drawn artwork; never populated with private family records.
-import { treeNetwork, memberBranch } from './tree-network.js';
+import { treeNetwork } from './tree-network.js';
 export function memoryScene() {
   return `<div class="memory-scene" aria-hidden="true">
     <span class="scrap-note note-top">a little of yesterday.<br>a little of today.</span>
@@ -32,16 +32,18 @@ export function decorateWelcome(root) {
   updateMotion();
 }
 export function decorateMember() {
-  setNetworkScene('network-member', memberBranch);
+  setNetworkScene('network-member');
 }
 export function decoratePublic() {
-  setNetworkScene('network-public', treeNetwork);
+  setNetworkScene('network-public');
   document.body.classList.add('network-member');
   updateMotion();
 }
 function setNetworkScene(scene, markup) {
   const backdrop=document.querySelector('.network-backdrop');
-  if (backdrop?.dataset.scene !== scene) {
+  if (!markup) {
+    backdrop?.remove();
+  } else if (backdrop?.dataset.scene !== scene) {
     backdrop?.remove();
     document.body.insertAdjacentHTML('afterbegin',markup());
     document.querySelector('.network-backdrop').dataset.scene=scene;
@@ -57,6 +59,7 @@ try {
 function updateMotion() {
   document.documentElement.dataset.motion = paused ? "paused" : "playing";
   document.querySelectorAll("[data-motion-toggle]").forEach((button) => {
+    button.hidden = !document.body.classList.contains('network-welcome');
     button.setAttribute("aria-pressed", String(paused));
     const scene = document.body.matches('.network-welcome,.network-member') ? 'signals' : 'scenery';
     button.textContent = `${paused ? 'Resume' : 'Pause'} ${scene}`;

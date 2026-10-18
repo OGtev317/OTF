@@ -14,7 +14,9 @@
 .brand-symbol.mobile-brand-mark{display:none;width:32px;height:32px}
 @media(max-width:650px){.brand.brand-roots .brand-symbol{width:44px;height:44px}.brand-roots strong{font-size:21px}.brand-roots small{font-size:7px;letter-spacing:1.5px}}
 @media(max-width:600px){.sidebar .brand.brand-roots{display:none}.brand-symbol.mobile-brand-mark{display:inline-block;vertical-align:middle;margin-right:9px}}
-.network-public .network-backdrop{display:block}
+.network-member{background:#000;--border:#287d4c}
+.network-member .network-backdrop{display:none}
+.network-member [data-motion-toggle]{display:none}
 .network-member :is(h1,h2,h3),.network-welcome :is(h1,h2,h3){font-family:'Manrope',sans-serif}
 .network-member :is(.community-aside p,.community-compose small,.public-label,.post-actions,.roots-card p,.sidebar-bottom,blockquote,.person-card>span:last-child){color:#b9cec1}
 .network-member :is(.community-aside h1 em,.space-nav a[aria-current]){color:#a9edc4}
@@ -39,6 +41,15 @@
 .network-member .community-aside h1{font-weight:500}
 .network-member .shell>header{height:auto;min-height:80px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
 .network-member button:disabled{opacity:.5;cursor:not-allowed}
+/* Plain workspace surfaces; animated welcome/login stays unchanged. */
+.network-member :is(.card,.hero,.tree-board,.person-card,dialog,.comment,.community-guide,.sidebar,.shell>header,.pilot-header,.pilot-pending,.demo-note,footer){background:#000;border-color:#287d4c}
+.network-member :is(.card,.hero,.tree-board,.person-card,dialog){border:1px solid #287d4c;box-shadow:none}
+.network-member :is(input,textarea,select),.network-member .branch-filter select,.network-member #person select{background:#000;color:#f5faf7;border:1px solid #328d57}
+.network-member button,.network-member button.quiet,.network-member .pilot-nav button{background:#000;color:#b0ffd0;border:1px solid #328d57}
+.network-member button:hover,.network-member button.quiet:hover,.network-member .pilot-nav button:hover{background:#102b1b;color:#fff}
+.network-member .pilot-nav .selected,.network-member .sidebar nav .active{background:#143b25;color:#d1ffe1;border:1px solid #54be7b}
+.network-member :is(.pilot-nav,.member,.community-actions,.post-actions,.tree-comparison th,.tree-comparison td,.generation+.generation){border-color:#287d4c}
+.network-member .hero .light-button{background:#000;color:#b0ffd0;border:1px solid #328d57}
 @media(max-width:650px){
   .network-public .network-tree{height:100svh}
   .network-member .space-nav{height:auto;padding:0}

@@ -4,6 +4,14 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Login-only animation and plain workspaces (2026-10-18)
+
+User clarified that only the login/welcome page keeps the moving tree. Family workspaces (including onboarding), Community and demo now use solid black backgrounds and green outlines on cards, inputs, buttons and navigation. Their scene initialization removes the decorative SVG entirely and hides the motion toggle. Returning to welcome restores the animated tree and the saved pause preference. Logo unchanged. Sites guidance used for responsive verification; no database/auth changes.
+
+Syntax checks, five model tests, twelve UI tests, build and whitespace checks passed. Scene regression tests cover welcome to member/public and back. Browser verified zero signal paths and black backgrounds in demo and the fictional member-tree fixture, including no horizontal overflow at 390px.
+
+Released as Vercel `dpl_DXLvcCoxzjHffi9nLMmqsQDVhutC` (READY) at https://otfroots.com. Live checks: login retains 16 signal paths; Community loads with zero signals and computed black body background. Updated the existing login integration assertion to expect no member branch after sign-in.
+
 ## Roots PNG identity (2026-10-18)
 
 Replaced all website logo and favicon references with `/brand/roots.png`, a byte-identical copy of the user's Downloads artwork. Adjusted CSS framing to fit the entire blue-green tree and its roots without modifying the original image. Previous `otf.png` remains unused; website colors, wordmark and behavior are unchanged. Sites guidance informed responsive checks; Vercel/Supabase retained.
