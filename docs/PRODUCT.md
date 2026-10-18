@@ -61,7 +61,7 @@ All requirements below are planned, not implemented.
 
 ## Open implementation decisions
 
-- First client: mobile-friendly web, iOS and Android, or iOS first.
+- First client selected: mobile-friendly web. The initial local prototype uses dependency-free HTML/CSS/JavaScript.
 - Hosting, authentication, database, and private media storage after platform selection.
 - Visual identity and pilot invitation policy.
 

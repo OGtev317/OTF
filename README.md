@@ -6,7 +6,15 @@ OTF starts with the founder's own family, with a longer-term goal of welcoming o
 
 ## Project status
 
-Project foundation established. Application implementation has not started; the first client platform is awaiting selection. There is no deployed app, authentication service, or shared family database yet.
+The first mobile-friendly web prototype is implemented using HTML, CSS, and browser JavaScript with no package dependencies. It includes a family feed with posts, reactions and replies; editable relatives grouped by generation; and gatherings. Fictional sample data and edits are stored in this browser's local storage. There is no deployed app, authentication service, or shared family database yet.
+
+## Run locally
+
+With a recent Node.js installation, run `npm run dev` and open http://127.0.0.1:5173 on this computer. The server binds to loopback only; this is not a phone-accessible or hosted URL. Run `npm run check` for syntax checks and `npm test` for relationship and saved-state tests.
+
+The responsive layout adapts to phone widths. Google Fonts is an optional external request with system-font fallbacks. Family records and updates are not sent to a backend. Browser storage is not an encrypted family vault and may be cleared by the browser. Use fictional data only.
+
+The prototype supports unspecified parent relationships; richer relationship types, deletion/undo, invitations, media, and account access controls remain future work.
 
 ## First release direction
 
