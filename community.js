@@ -104,4 +104,4 @@ if(configured) {
     }
   });
   run(async()=>{session=(await result(supabase.auth.getSession())).session;await load();});
-} else root.innerHTML='<section class="card"><h2>Community is getting ready.</h2><p>The public feed is not connected in this environment. No sample posts are presented as real activity.</p><a href="/">Return to OTF</a></section>';
+} else root.innerHTML='<section class="card"><h2>Community is getting ready.</h2><p>The public feed is not connected in this environment. No sample posts are presented as real activity.</p><a href="/">Return to Roots</a></section>';

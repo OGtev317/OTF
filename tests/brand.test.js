@@ -3,7 +3,9 @@ import {readFileSync} from 'node:fs';
 test('all entry pages carry the accessible Roots identity and browser icon',()=>{
   for(const file of ['index.html','community.html','demo.html']){
     const doc=new DOMParser().parseFromString(readFileSync(file,'utf8'),'text/html');
-    expect(doc.querySelector('.brand-roots').getAttribute('aria-label')).toBe('OTF Roots — home');
+    expect(doc.querySelector('.brand-roots').getAttribute('aria-label')).toBe('Roots — home');
+    expect(doc.querySelector('.brand-copy').textContent).toBe('Roots');
+    expect(doc.title).not.toContain('OTF');
     expect(doc.querySelector('.brand-roots img').getAttribute('alt')).toBe('');
     expect(doc.querySelector('.brand-roots img').getAttribute('src')).toBe('/brand/roots.png');
     expect(doc.querySelector('link[rel="icon"]').getAttribute('href')).toBe('/brand/roots.png');

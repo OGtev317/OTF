@@ -4,6 +4,12 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Visible brand simplified to Roots (2026-10-18)
+
+User requested removing OTF and leaving Roots on all pages. Updated all production page wordmarks, accessible home-link names, titles, descriptions, mobile demo header and on-page brand mentions (including invitation text and tree guidance). Removed the Only the Family header tagline. Preserved roots.png, otfroots.com, internal storage keys, package/project identifiers and authentication settings. Hosted email templates were not changed. Sites guidance informed visual verification; no data/access changes.
+
+Syntax checks, five model tests, twelve UI tests, build and whitespace checks passed. Vercel `dpl_rNZmdKtMvJqBJT7bQK1wvSpkdAur` reached READY at https://otfroots.com; live browser verified Roots home label and page title. Production UI source scan found no remaining OTF/Only the Family brand text.
+
 ## Login-only animation and plain workspaces (2026-10-18)
 
 User clarified that only the login/welcome page keeps the moving tree. Family workspaces (including onboarding), Community and demo now use solid black backgrounds and green outlines on cards, inputs, buttons and navigation. Their scene initialization removes the decorative SVG entirely and hides the motion toggle. Returning to welcome restores the animated tree and the saved pause preference. Logo unchanged. Sites guidance used for responsive verification; no database/auth changes.
