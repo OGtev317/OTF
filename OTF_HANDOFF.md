@@ -57,6 +57,16 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 
 ## Next work
 
+### Dark connection-tree welcome page
+
+User requested a black main page, white text, and a light-blue moving system of connections through a tree's branches and roots. Implemented a welcome-only dark theme and locally generated decorative SVG network in `tree-network.js` / `network-welcome.css`. The welcome headline is “Different branches. One family.” A stationary dark sign-in panel keeps controls readable. No real genealogy, identities, network status, or telemetry populates the background. No database/access changes are part of this update.
+
+Pause/Resume signals persists the existing local motion preference; reduced-motion CSS disables animation. The authenticated family pages and Community retain their previous appearance. The fictional demo retains the earlier garden photograph. Main welcome no longer loads that image. Desktop and approximately 390px browser checks verified layout, running/paused animation state, and no horizontal overflow. Tests cover single backdrop creation, motion preference persistence, redraws, and reduced-motion CSS. Actual OS reduced-motion emulation is not part of the browser check.
+
+Syntax checks, five model tests, eight UI tests, production build, and whitespace checks passed. Vercel deployment `dpl_CsDSa8kTYbrsiGSUt8dcpM3QKffb` reached READY at https://otf-theta.vercel.app; the live browser showed the dark theme and 16 running signal paths. No database migration was needed. Sites skill guidance informed responsive validation while preserving the existing hosting stack.
+
+The earlier memorial-steward restrictions and relationship-bound email invitations remain design requests, NOT implemented by this UI change. Current member tree additions and owner-reviewed edits still follow the deployed contribution milestone below.
+
 ### Public Community milestone (2026-10-17)
 
 User approved public reading with sign-in required to post/interact. Implemented a text-first `/community.html` beside private Family Circle. Community has separate opt-in public profiles, an 18+ self-attestation (not independently verified age), 500-character posts, single-level replies, likes, chronological keyset pagination, own-post soft removal, private reports, signed-in bilateral blocking, operator suspension, and per-account posting/report limits. No private-family data is copied or exposed. Photos, following, reposts, and automatic moderation remain deferred; scope was communicated during implementation.

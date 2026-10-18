@@ -162,7 +162,7 @@ function controlKey(el) {
   return el.name ? `${scope} [name="${el.name}"]${el.type==='checkbox' ? `[value="${el.value}"]` : ''}` : el.tagName === "BUTTON" ? `${scope} button` : "";
 }
 function render() {
-  document.body.classList.remove('photo-welcome');
+  document.body.classList.remove('photo-welcome','network-welcome');
   const sameFamily = Boolean(session && root.dataset.familyId === familyId);
   const oldPerson = sameFamily && savedForm !== '#person' ? root.querySelector('#person') : null;
   const personKey = oldPerson?.dataset.person;

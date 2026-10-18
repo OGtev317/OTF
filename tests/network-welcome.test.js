@@ -1,0 +1,33 @@
+import {test,expect} from 'vitest';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+test('decorative network mounts once and motion preference survives welcome redraws',async()=>{
+  document.body.className='';
+  localStorage.setItem('otf-motion-paused','true');
+  document.body.innerHTML='<header class="pilot-header"></header><main id="pilot"><section class="welcome"><h1>Welcome</h1><span class="eyebrow"></span><p></p><div class="hero"></div></section></main>';
+  const {decorateWelcome}=await import('../memory-scene.js');
+  const root=document.querySelector('#pilot');
+  decorateWelcome(root);
+  expect(document.body.classList.contains('network-welcome')).toBe(true);
+  expect(document.querySelector('.network-backdrop').getAttribute('aria-hidden')).toBe('true');
+  expect(document.querySelectorAll('.network-wires path').length).toBeGreaterThan(30);
+  expect(document.querySelectorAll('.network-signals .signal').length).toBeGreaterThan(10);
+  expect(document.querySelector('.photo-backdrop')).toBeNull();
+  expect(document.querySelector('.welcome .hero')).toBeNull();
+  const toggle=document.querySelector('[data-motion-toggle]');
+  expect(toggle.textContent).toBe('Resume signals');
+  expect(toggle.getAttribute('aria-pressed')).toBe('true');
+  toggle.click();
+  expect(document.documentElement.dataset.motion).toBe('playing');
+  expect(localStorage.getItem('otf-motion-paused')).toBe('false');
+  decorateWelcome(root);
+  expect(document.querySelectorAll('.network-backdrop').length).toBe(1);
+  expect(document.querySelectorAll('[data-motion-toggle]').length).toBe(1);
+  expect(toggle.textContent).toBe('Pause signals');
+  toggle.click();
+  expect(document.documentElement.dataset.motion).toBe('paused');
+  // CSS explicitly disables motion for the OS accessibility preference.
+  const css=readFileSync(resolve('network-welcome.css'),'utf8');
+  expect(css).toMatch(/prefers-reduced-motion:reduce/);
+  expect(css).toMatch(/\.signal\{animation:none!important/);
+});

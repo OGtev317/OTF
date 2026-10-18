@@ -1,0 +1,55 @@
+/* Welcome-only theme. Private family pages keep their quiet paper surfaces. */
+.network-backdrop{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#030609}
+.network-welcome{background:#030609;color:#f5f8fc;color-scheme:dark;--green:#b8e5ff;--border:#243846}
+.network-welcome::before{display:none}
+.network-welcome .network-backdrop{display:block}
+.network-tree{position:absolute;width:100%;height:100%;inset:0;overflow:visible}
+.network-wires{stroke:#407a9c;stroke-width:1.25;opacity:.6;stroke-linecap:round}
+.network-halos{fill:#71caff;opacity:.075}
+.network-nodes{fill:#99dcff;opacity:.65}
+.network-signals{stroke:#b7eaff;stroke-width:2.5;stroke-linecap:round;filter:drop-shadow(0 0 5px #42b9ff)}
+.signal{stroke-dasharray:1.6 98.4;stroke-dashoffset:0;animation:tree-signal 13s linear infinite}
+.signal-1{animation-delay:-2s;animation-duration:16s;animation-direction:reverse}
+.signal-2{animation-delay:-7s;animation-duration:18s}
+.signal-3{animation-delay:-11s;animation-duration:15s;animation-direction:reverse}
+.signal-4{animation-delay:-5s;animation-duration:20s}
+.signal-5{animation-delay:-9s;animation-duration:17s;animation-direction:reverse}
+.network-heart{fill:#d4f2ff;filter:drop-shadow(0 0 12px #64caff)}
+.network-heart-ring{stroke:#90d8ff;stroke-width:1;opacity:.5}
+@keyframes tree-signal{to{stroke-dashoffset:-100}}
+html[data-motion=paused] .signal{animation-play-state:paused}
+.network-welcome .pilot-header{background:#030609cc;border-color:#20313e;height:96px;position:relative}
+.network-welcome .brand{color:#fff;flex-shrink:0}
+.network-welcome .pilot-header>a:not(.brand){font-size:12px;color:#e3edf4}
+.network-welcome .demo-pill{color:#9aafbd}
+.network-welcome .motion-toggle{background:#071018;border-color:#304653;color:#d8f0ff;font-size:11px;min-height:44px}
+.network-welcome .motion-toggle:hover{background:#142734}
+body:not(.network-welcome) .pilot-header .motion-toggle{display:none}
+.network-welcome .pilot-pending{background:#0a151de8;border-bottom:1px solid #1e303d;color:#b6c9d5;font-size:11px}
+.network-welcome #pilot{max-width:1280px;min-height:calc(100svh - 202px);padding:90px 48px 120px;display:flex;align-items:center}
+.network-welcome .auth-grid{width:100%;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:115px;align-items:center}
+.network-welcome .welcome{padding:0 0 100px;position:relative}
+.network-welcome .welcome>.eyebrow{font-size:10px;letter-spacing:2.4px;color:#b8e5ff;margin-bottom:28px}
+.network-welcome .welcome h1{font-family:'Manrope',sans-serif;font-size:clamp(42px,4.4vw,64px);font-weight:500;line-height:1.12;letter-spacing:-3px;color:#fff;text-shadow:0 2px 24px #000;margin-bottom:27px}
+.network-welcome .welcome h1 em{font-style:normal;font-weight:500;color:#bce6ff}
+.network-welcome .welcome>p{max-width:360px;font-size:14px;line-height:1.9;color:#c0ced8;text-shadow:0 2px 8px #000}
+.network-welcome .welcome>a{display:inline-block;color:#e4f5ff;border-color:#6d9ab2;font-size:12px;margin-top:12px;padding-bottom:8px}
+.network-welcome .auth-grid>.card,.network-welcome .welcome>.card{background:#080f16ed;border:1px solid #2b414f;border-radius:18px;padding:34px;box-shadow:0 20px 80px #0007,0 0 40px #4cbaff06;color:#f5f8fc;margin:0}
+.network-welcome .auth-grid>.card::before{display:none}
+.network-welcome .auth-grid>.card h2,.network-welcome .welcome>.card h2{font-family:'Manrope',sans-serif;font-weight:500;font-size:25px;color:#fff;letter-spacing:-.7px}
+.network-welcome .stack>p,.network-welcome .welcome>.card p{color:#afc0cd;font-size:13px}
+.network-welcome .stack label{color:#e3edf5;font-size:12px}
+.network-welcome input{background:#050b10;color:#fff;border-color:#304350;min-height:48px;font-size:16px}
+.network-welcome input:focus-visible{outline:2px solid #a1dcff;outline-offset:3px}
+.network-welcome .auth-grid button:not(.quiet),.network-welcome .light-button{background:#d3efff;color:#08151f;box-shadow:none;border-radius:8px;min-height:46px}
+.network-welcome .auth-grid button:not(.quiet):hover{background:#fff}
+.network-welcome .quiet{color:#c2d8e6}
+.network-welcome .quiet:hover{color:#fff}
+.network-welcome footer{background:#030609b8;border-color:#1c2c38;color:#b1c3d0;padding:24px max(28px,calc((100vw - 1160px)/2));font-size:11px;position:relative}
+.network-welcome footer a{color:#e3f4ff}
+.network-welcome #status{background:#122c3d;color:#fff;border:1px solid #558cae}
+.network-welcome a:focus-visible,.network-welcome button:focus-visible{outline:2px solid #a1dcff;outline-offset:4px}
+.network-welcome .welcome>.card{margin-top:32px;max-width:420px}
+@media(max-width:1000px){.network-welcome .auth-grid{gap:40px;grid-template-columns:minmax(0,1fr) minmax(280px,.85fr)}.network-welcome #pilot{padding:70px 32px 100px}.network-welcome .welcome h1{font-size:48px}.network-welcome .welcome>.eyebrow{letter-spacing:1.5px;font-size:9px}}
+@media(max-width:650px){.network-welcome .pilot-header{height:auto;min-height:88px;flex-wrap:wrap;gap:12px;padding:16px 20px}.network-welcome .pilot-header>a:not(.brand){font-size:11px;margin-left:auto}.network-welcome .pilot-header .brand{margin-right:0}.network-welcome .motion-toggle{padding:8px 10px;font-size:10px}.network-welcome #account:empty{display:none}.network-welcome .pilot-pending{font-size:10px;padding:10px 20px}.network-welcome #pilot{display:block;padding:44px 22px 60px}.network-welcome .auth-grid{grid-template-columns:1fr;gap:42px}.network-welcome .welcome{padding:0 0 70px}.network-welcome .welcome h1{font-size:clamp(36px,10vw,49px);letter-spacing:-1.8px}.network-welcome .welcome>.eyebrow{font-size:8px;letter-spacing:1.2px;margin-bottom:22px}.network-welcome .welcome>p{font-size:13px;max-width:300px}.network-welcome .auth-grid>.card,.network-welcome .welcome>.card{padding:27px 23px}.network-tree{width:210%;left:-55%;height:900px;top:5px}.network-welcome footer{padding:22px;font-size:10px;gap:12px}}
+@media(prefers-reduced-motion:reduce){.signal{animation:none!important;stroke-dashoffset:-35}.network-welcome .motion-toggle{display:none}}

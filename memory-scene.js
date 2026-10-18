@@ -1,4 +1,5 @@
 // Decorative, locally drawn artwork; never populated with private family records.
+import { treeNetwork } from './tree-network.js';
 export function memoryScene() {
   return `<div class="memory-scene" aria-hidden="true">
     <span class="scrap-note note-top">a little of yesterday.<br>a little of today.</span>
@@ -18,17 +19,18 @@ export function memoryScene() {
   </div>`;
 }
 export function decorateWelcome(root) {
-  document.body.classList.add('photo-welcome');
+  document.body.classList.add('network-welcome');
+  if(!document.querySelector('.network-backdrop')) document.body.insertAdjacentHTML('afterbegin',treeNetwork());
   const welcome = root.querySelector(".welcome");
   if (!welcome) return;
   welcome.querySelector("h1").innerHTML =
-    "Life moves fast.<br><em>Stay close.</em>";
+    "Different branches.<br><em>One family.</em>";
   welcome.querySelector(".eyebrow").textContent =
-    "ROOTED IN FAMILY. MADE FOR EVERYDAY.";
+    "EVERY LIFE CONNECTED. EVERY STORY KEPT.";
   welcome.querySelector(":scope > p").textContent =
     "A home for your everyday moments, your shared stories, and the people who make you, you.";
   welcome.querySelector(".hero")?.remove();
-  welcome.insertAdjacentHTML("beforeend", memoryScene());
+  updateMotion();
 }
 let paused = false;
 try {
@@ -38,17 +40,11 @@ function updateMotion() {
   document.documentElement.dataset.motion = paused ? "paused" : "playing";
   document.querySelectorAll("[data-motion-toggle]").forEach((button) => {
     button.setAttribute("aria-pressed", String(paused));
-    button.textContent = paused ? "Resume scenery" : "Pause scenery";
+    const scene = document.body.classList.contains('network-welcome') ? 'signals' : 'scenery';
+    button.textContent = `${paused ? 'Resume' : 'Pause'} ${scene}`;
   });
 }
 const header = document.querySelector("header");
-if (!document.querySelector('.photo-backdrop')) {
-  const backdrop = document.createElement('div');
-  backdrop.className = 'photo-backdrop';
-  backdrop.setAttribute('aria-hidden', 'true');
-  backdrop.innerHTML = '<img src="/images/family-tree-garden.jpg" alt="" fetchpriority="high">';
-  document.body.prepend(backdrop);
-}
 if (header) {
   const button = document.createElement("button");
   button.type = "button";

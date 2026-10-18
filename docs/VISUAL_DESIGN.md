@@ -1,8 +1,16 @@
 # OTF living family tree
 
+## Current welcome page: connection tree
+
+The user replaced the photographic welcome direction with a black page, white text, and light-blue signals moving through the branches, trunk, and roots of a tree. `tree-network.js` generates deterministic decorative SVG geometry; `network-welcome.css` supplies the welcome-only dark theme and CSS stroke-dash animations. The tree has no real family records, account identities, live network status, or data connections. No new image generation, video, or animation dependency is used.
+
+The form stays stationary on a dark panel. Pause/Resume signals shares the existing local `otf-motion-paused` preference. OS reduced-motion disables the signal animation. Authenticated family pages and Community retain their existing styles; the fictional demo retains its garden photograph. The welcome page no longer requests the garden image. The Sites skill guided responsive layout and validation while retaining the existing Vercel workflow.
+
+## Earlier photographic direction (retained for the demo)
+
 Direction selected by the user: earthy and rooted, cozy and nostalgic, a living family tree mixed with a scrapbook. The follow-up asked for a photographic live-view background.
 
-The welcome page uses an animated still photograph: slow CSS pan/zoom and changing sunlight, with a fixed, readable form. It is not video, a live camera, or an interactive genealogical visualization. The fictional demo uses the same asset in its hero. The real family tree remains a separate app feature.
+The earlier welcome page used an animated still photograph: slow CSS pan/zoom and changing sunlight, with a fixed, readable form. It was not video, a live camera, or an interactive genealogical visualization. The fictional demo still uses this asset in its hero. The real family tree remains a separate app feature.
 
 - Served asset: `public/images/family-tree-garden.jpg` (JPEG delivery copy).
 - Original source: `assets/source/family-tree-garden.png` (excluded from Vercel upload).
