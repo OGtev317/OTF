@@ -57,6 +57,20 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 
 ## Next work
 
+### Public Community milestone (2026-10-17)
+
+User approved public reading with sign-in required to post/interact. Implemented a text-first `/community.html` beside private Family Circle. Community has separate opt-in public profiles, an 18+ self-attestation (not independently verified age), 500-character posts, single-level replies, likes, chronological keyset pagination, own-post soft removal, private reports, signed-in bilateral blocking, operator suspension, and per-account posting/report limits. No private-family data is copied or exposed. Photos, following, reposts, and automatic moderation remain deferred; scope was communicated during implementation.
+
+The additive `20261019010000_community.sql` migration was applied through the Supabase Management API, outside the CLI migration ledger, after confirming the function was absent. Do not reapply it or the initial family migration blindly. No hosted family rows were read or modified. Hosted anonymous-role checks verified Community reads and denied anonymous family-post/tree reads and Community writes. No synthetic public posts or real account material were created on the hosted service.
+
+Validation: syntax checks, five model tests, five UI tests (including Community mocked opt-in/post/like/report/block/signout, escaped text and retained failed drafts), both real PostgreSQL suites in a disposable local container, production build, and whitespace checks passed. Browser checked public empty-feed state and mobile layout; caught and fixed a fixed-height-header overlap. Hosted authenticated multi-account browser interactions are NOT verified; email onboarding remains pending. Moderation is manual via the operator instructions in `docs/COMMUNITY.md`, with no notifications or response SLA. This is a supervised pilot, not broad-launch readiness.
+
+Sites skill implementation/validation guidance was used while preserving the existing Supabase/Vercel hosting choice. Direct Vercel deployment, not automatic GitHub deployment, remains the release mechanism.
+
+### Next requested milestone: extended-family contributions
+
+User wants multiple household branches inside an extended family and individual contributions for deceased relatives with biographical information. Asked whether owner approval is required for all contributions or only edits to existing people. Await that decision before changing owner-only tree access. Do not merge separate authorized family spaces or publish memorial/tree records to Community. Proposed scope: branches, explicit deceased status, optional/unknown birth and death dates, stories, sources, and reviewed contribution history. Not implemented yet.
+
 ### Living tree visual update
 
 User selected earthy/rooted and cozy/nostalgic scrapbook styling, then requested a photographic living-tree background. The welcome page now uses an AI-generated golden-hour oak with hanging keepsakes, slow CSS camera drift and soft light motion, with stationary cream-paper forms. The demo hero uses the same photograph. This is an animated still, not video or a webcam feed. A persistent Pause scenery control and `prefers-reduced-motion` support stop animation. Authenticated reading areas retain quiet paper backgrounds. No real family images are used.

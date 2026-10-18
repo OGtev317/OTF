@@ -1,0 +1,5 @@
+@layer base, pilot, theme, community;
+@import "./style.css" layer(base);
+@import "./pilot.css" layer(pilot);
+@import "./earthy.css" layer(theme);
+@import "./community.css" layer(community);

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 // Isolated, disposable PostgreSQL. No ports, host directories, or real account data.
 const name = `otf-policy-test-${randomUUID()}`;
@@ -41,18 +41,12 @@ try {
   const sql =
     bootstrap +
     "\n" +
-    readFileSync(
-      new URL(
-        "../supabase/migrations/20261018010000_family_pilot.sql",
-        import.meta.url,
-      ),
-      "utf8",
-    ) +
+    readdirSync(new URL('../supabase/migrations/', import.meta.url)).filter(f=>f.endsWith('.sql')).sort().map(f=>readFileSync(new URL('../supabase/migrations/'+f,import.meta.url),'utf8')).join('\n') +
     "\n" +
     readFileSync(
       new URL("../supabase/tests/isolation.sql", import.meta.url),
       "utf8",
-    );
+    ) + '\n' + readFileSync(new URL('../supabase/tests/community.sql',import.meta.url),'utf8');
   docker(
     [
       "exec",
@@ -68,7 +62,7 @@ try {
     sql,
   );
   console.log(
-    "PASS: PostgreSQL RLS, RPC authorization, invitations, revocation, and tree integrity.",
+    "PASS: PostgreSQL family isolation and Community public reads, opt-in, ownership, blocks, reports, moderation, limits, and pagination.",
   );
 } finally {
   // Only the exact unique container created by this invocation is removed.

@@ -61,6 +61,14 @@ Database family isolation, expiring single-use invitations, member removal, and 
 
 ## Open implementation decisions
 
+### Public Community
+
+Alongside private Family Circle, a separate `/community.html` provides public chronological text posts, replies, profiles, and likes. Reading is anonymous; participation requires sign-in, explicit public-profile opt-in, and an 18+ self-attestation. No private family content is published automatically. Reports and signed-in blocking are available; moderation is operator-managed during the pilot. See [Community scope and operator guide](COMMUNITY.md). Photos, following, reposts, and automated moderation are deferred.
+
+### Extended-family contributions (requested next)
+
+The user wants multiple household branches within a shared extended-family tree, with individual contributions and memorial records for deceased relatives. Approval policy is awaiting the user's choice. Do not merge existing separate family spaces, expose their records to one another, or infer who is deceased. Design memorial dates, stories, sources, and relationship types with unknown dates and non-account relatives supported. Existing tree edits remain owner-only until the contribution workflow is implemented and verified.
+
 - First client selected: mobile-friendly web. The initial local prototype uses dependency-free HTML/CSS/JavaScript.
 - Hosting selected: Vercel. Authentication and database selected: Supabase. Private media uploads are deferred.
 - Visual identity and pilot invitation policy.
