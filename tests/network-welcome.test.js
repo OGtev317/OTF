@@ -5,7 +5,7 @@ test('decorative network mounts once and motion preference survives welcome redr
   document.body.className='';
   localStorage.setItem('otf-motion-paused','true');
   document.body.innerHTML='<header class="pilot-header"></header><main id="pilot"><section class="welcome"><h1>Welcome</h1><span class="eyebrow"></span><p></p><div class="hero"></div></section></main>';
-  const {decorateWelcome,decorateMember}=await import('../memory-scene.js');
+  const {decorateWelcome,decorateMember,decoratePublic}=await import('../memory-scene.js');
   const root=document.querySelector('#pilot');
   decorateWelcome(root);
   expect(document.body.classList.contains('network-welcome')).toBe(true);
@@ -40,7 +40,22 @@ test('decorative network mounts once and motion preference survives welcome redr
   expect(document.body.classList.contains('network-member')).toBe(false);
   expect(document.querySelectorAll('.network-backdrop').length).toBe(1);
   // CSS explicitly disables motion for the OS accessibility preference.
+  decoratePublic();
+  expect(document.body.classList.contains('network-public')).toBe(true);
+  expect(document.body.classList.contains('network-member')).toBe(true);
+  expect(document.querySelector('.member-branch')).toBeNull();
+  expect(document.querySelectorAll('.signal').length).toBe(16);
+  const publicTree=document.querySelector('.network-backdrop');
+  decoratePublic();
+  expect(document.querySelector('.network-backdrop')).toBe(publicTree);
+  expect(document.querySelectorAll('[data-motion-toggle]').length).toBe(1);
+  expect(toggle.textContent).toBe('Resume signals');
+  expect(document.querySelector('#network-aura stop').getAttribute('stop-color')).toBe('#59e894');
+  decorateMember();
+  expect(document.body.classList.contains('network-public')).toBe(false);
+  expect(document.querySelectorAll('.signal').length).toBe(6);
   const css=readFileSync(resolve('network-welcome.css'),'utf8');
+  expect(css).toContain('stroke:#b0ffd0');
   expect(css).toMatch(/prefers-reduced-motion:reduce/);
   expect(css).toMatch(/\.signal\{animation:none!important/);
 });

@@ -54,7 +54,7 @@ export function treeNetwork() {
     });
   });
   return `<div class="network-backdrop" aria-hidden="true"><svg class="network-tree" viewBox="0 0 1440 1000" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-    <defs><radialGradient id="network-aura"><stop stop-color="#59bfff" stop-opacity=".12"/><stop offset="1" stop-color="#59bfff" stop-opacity="0"/></radialGradient></defs>
+    <defs><radialGradient id="network-aura"><stop stop-color="#59e894" stop-opacity=".12"/><stop offset="1" stop-color="#59e894" stop-opacity="0"/></radialGradient></defs>
     <ellipse cx="720" cy="520" rx="520" ry="440" fill="url(#network-aura)"/>
     <g class="network-wires">${wires.map(d=>`<path d="${d}"/>`).join('')}</g>
     <g class="network-halos">${nodes.map(([x,y,r])=>`<circle cx="${Math.round(x)}" cy="${Math.round(y)}" r="${r*3}"/>`).join('')}</g>

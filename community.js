@@ -1,4 +1,6 @@
 import { configured, supabase } from './supabase-client.js';
+import { decoratePublic } from './memory-scene.js';
+decoratePublic();
 const root = document.querySelector('#community');
 const status = document.querySelector('#community-status');
 const account = document.querySelector('#account');

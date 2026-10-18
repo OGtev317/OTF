@@ -1,34 +1,34 @@
 /* Signed-in family workspace: a single decorative branch behind readable panels. */
-.network-member{background:#030609;color:#f5f8fc;color-scheme:dark;--green:#b8e5ff;--border:#2b414f;--muted:#b5c7d4}
+.network-member{background:#030806;color:#f5faf7;color-scheme:dark;--green:#a9edc4;--border:#2d4837;--muted:#b9cec1}
 .network-member::before{display:none}
-.network-member .member-backdrop{display:block;background:radial-gradient(ellipse at 10% 65%,#0a1e2c88,transparent 65%),#030609}
+.network-member .member-backdrop{display:block;background:radial-gradient(ellipse at 10% 65%,#0b2b1988,transparent 65%),#030806}
 .network-member .network-wires{opacity:.48}
 .network-member .network-signals{opacity:.8}
-.network-member .pilot-header{background:#030609d9;border-color:#243846;height:auto;min-height:96px;flex-wrap:wrap;padding-top:16px;padding-bottom:16px}
+.network-member .pilot-header{background:#030806d9;border-color:#263f32;height:auto;min-height:96px;flex-wrap:wrap;padding-top:16px;padding-bottom:16px}
 .network-member .brand,.network-member h1,.network-member h2,.network-member h3{color:#fff}
 .network-member .family-top h1{font-family:'Manrope',sans-serif;letter-spacing:-1.2px}
-.network-member a,.network-member .eyebrow{color:#b8e5ff}
-.network-member .demo-pill,.network-member small,.network-member .stack>p,.network-member .life-dates,.network-member .memorial-label{color:#b5c7d4}
-.network-member .pilot-pending{background:#0a151de8;border-bottom:1px solid #243846;color:#b5c7d4}
+.network-member a,.network-member .eyebrow{color:#a9edc4}
+.network-member .demo-pill,.network-member small,.network-member .stack>p,.network-member .life-dates,.network-member .memorial-label{color:#b9cec1}
+.network-member .pilot-pending{background:#0b1911e8;border-bottom:1px solid #263f32;color:#b9cec1}
 .network-member #pilot{padding-bottom:72px}
-.network-member .card{background:#080f16ed;border:1px solid #2b414f;border-radius:16px;box-shadow:0 12px 36px #0004;color:#f5f8fc}
+.network-member .card{background:#09150eed;border:1px solid #2d4837;border-radius:16px;box-shadow:0 12px 36px #0004;color:#f5faf7}
 .network-member .card::before{display:none}
-.network-member input,.network-member textarea,.network-member select,.network-member .branch-filter select,.network-member #person select{background:#050b10;color:#fff;border-color:#3a5363;font-size:16px;max-width:100%}
-.network-member input::placeholder,.network-member textarea::placeholder{color:#96adbd}
-.network-member input[type=checkbox]{accent-color:#b8e5ff}
-.network-member button{background:#d3efff;color:#08151f;box-shadow:none;min-height:44px}
+.network-member input,.network-member textarea,.network-member select,.network-member .branch-filter select,.network-member #person select{background:#050e09;color:#fff;border-color:#3d604a;font-size:16px;max-width:100%}
+.network-member input::placeholder,.network-member textarea::placeholder{color:#a1bdaa}
+.network-member input[type=checkbox]{accent-color:#a9edc4}
+.network-member button{background:#cff5dd;color:#081c10;box-shadow:none;min-height:44px}
 .network-member button:hover{background:#fff}
-.network-member button.quiet,.network-member .pilot-nav button{background:#0b1721;color:#c2d8e6;border:1px solid #304653}
-.network-member button.quiet:hover,.network-member .pilot-nav button:hover{background:#192f3e;color:#fff}
-.network-member .pilot-nav .selected{background:#ccecff;color:#08151f;border-color:#ccecff}
-.network-member .pilot-nav,.network-member .member,.network-member .comment,.network-member .tree-comparison th,.network-member .tree-comparison td{border-color:#2b414f}
-.network-member .comment{background:#101f2a;color:#edf5fa}
-.network-member .event p{color:#b5c7d4}
-.network-member .liked{color:#b8e5ff}
+.network-member button.quiet,.network-member .pilot-nav button{background:#0d2115;color:#c7dfd0;border:1px solid #34523f}
+.network-member button.quiet:hover,.network-member .pilot-nav button:hover{background:#1c3c29;color:#fff}
+.network-member .pilot-nav .selected{background:#c9f4d9;color:#081c10;border-color:#c9f4d9}
+.network-member .pilot-nav,.network-member .member,.network-member .comment,.network-member .tree-comparison th,.network-member .tree-comparison td{border-color:#2d4837}
+.network-member .comment{background:#12291b;color:#edf8f1}
+.network-member .event p{color:#b9cec1}
+.network-member .liked{color:#a9edc4}
 .network-member .tree-warning{background:#30291b;color:#f3d8a4}
-.network-member #status{background:#122c3d;color:#fff;border:1px solid #558cae}
-.network-member footer{background:#030609b8;border-color:#243846;color:#b5c7d4}
-.network-member :is(input,textarea,select,button,a,summary):focus-visible{outline:2px solid #a1dcff;outline-offset:3px}
+.network-member #status{background:#143b25;color:#fff;border:1px solid #579e73}
+.network-member footer{background:#030806b8;border-color:#263f32;color:#b9cec1}
+.network-member :is(input,textarea,select,button,a,summary):focus-visible{outline:2px solid #a1efbd;outline-offset:3px}
 .network-member .motion-toggle{font-size:11px}
 @media(max-width:650px){
   .network-member .pilot-header{gap:10px;padding:16px 20px}

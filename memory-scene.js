@@ -34,6 +34,11 @@ export function decorateWelcome(root) {
 export function decorateMember() {
   setNetworkScene('network-member', memberBranch);
 }
+export function decoratePublic() {
+  setNetworkScene('network-public', treeNetwork);
+  document.body.classList.add('network-member');
+  updateMotion();
+}
 function setNetworkScene(scene, markup) {
   const backdrop=document.querySelector('.network-backdrop');
   if (backdrop?.dataset.scene !== scene) {
@@ -41,7 +46,7 @@ function setNetworkScene(scene, markup) {
     document.body.insertAdjacentHTML('afterbegin',markup());
     document.querySelector('.network-backdrop').dataset.scene=scene;
   }
-  document.body.classList.remove('photo-welcome','network-welcome','network-member');
+  document.body.classList.remove('photo-welcome','network-welcome','network-member','network-public');
   document.body.classList.add(scene);
   updateMotion();
 }

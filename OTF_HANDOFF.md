@@ -4,6 +4,16 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Latest visual update: green connection theme across all pages (2026-10-18)
+
+Applied the login screen's black/dark-panel and white-text theme across Family Circle, Community (feed, profiles, threads and forms), and the fictional demo (home, tree, gatherings and relative dialog). Tree lines, nodes, moving signals and accent colors are now green. Public/demo pages share the full decorative tree; authenticated family views retain the individual decorative branch. Neither artwork depicts private records or inferred ancestry. Removed the demo's photographic hero treatment in favor of the shared theme; no assets or family records were deleted.
+
+Shared scene initialization retains a single background and motion control across redraws. Persistent pause/resume and OS reduced-motion rules remain supported. `network-shared.css` covers shared surfaces and public/demo-specific controls. Sites guidance informed consistent responsive styling while preserving Vercel/Supabase. No authentication, database or access-rule changes.
+
+Validation: syntax checks, five model tests, eleven UI tests (expanded scene/green-palette coverage), production build and whitespace checks passed. Browser reviewed desktop demo and 390px demo relative dialog, Community and fictional authenticated tree fixture; no horizontal overflow. Hosted authenticated accounts/email journeys were not tested.
+
+Published directly to Vercel as `dpl_GRRxmZYKUPEZnnP46e1xzMQNQ4gW` (READY), aliased to https://otfroots.com. Live browser confirmed green signals and dark surfaces on login and Community. The previous kinship deployment was verified before this release; no database migration was needed.
+
 ## Latest operational update: OTF Roots domain (2026-10-18)
 
 - User selected `otfroots.com` and authorized configuration plus commit/push to `main`.

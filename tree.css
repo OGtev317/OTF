@@ -19,4 +19,4 @@
 .kin-list .check{flex-wrap:wrap}.kin-list .check select{margin-left:auto;padding:6px 8px;font-size:13px;border-radius:6px;max-width:100%}
 .kin-list .check:has(input:not(:checked)) select{display:none}
 .relative .tree-actions{margin-top:12px}.member .tree-actions{flex-shrink:0}
-.network-member .kin-label{color:#a1dcff}.network-member :is(.kin-note,.kin-account){color:#b9c8d2}
+.network-member .kin-label{color:#a1efbd}.network-member :is(.kin-note,.kin-account){color:#b9cec1}

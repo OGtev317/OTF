@@ -1,0 +1,34 @@
+/* The same quiet, dark surfaces across family, public, and fictional pages. */
+:root{background:#030806;color-scheme:dark}
+.network-public .network-backdrop{display:block}
+.network-member :is(h1,h2,h3),.network-welcome :is(h1,h2,h3){font-family:'Manrope',sans-serif}
+.network-member :is(.community-aside p,.community-compose small,.public-label,.post-actions,.roots-card p,.sidebar-bottom,blockquote,.person-card>span:last-child){color:#b9cec1}
+.network-member :is(.community-aside h1 em,.space-nav a[aria-current]){color:#a9edc4}
+.network-member .community-guide{transform:none}
+.network-member :is(.community-actions,.post-actions,.generation+.generation){border-color:#2d4837}
+.network-member :is(.community-avatar,.avatar,.family-symbol,.event-icon){background:#193b27;color:#d1ffe1}
+.network-member .avatar-stack .avatar{border-color:#2d4837}
+.network-member :is(.sidebar,.shell>header){background:#050d09ed;border-color:#2d4837}
+.network-member .sidebar{z-index:4}
+.network-member .sidebar nav .active{background:#c9f4d9;color:#081c10}
+.network-member :is(.demo-note,.tree-board){background:#091b11e8;color:#b9cec1;border:1px solid #2d4837}
+.network-member :is(.person-card,dialog){background:#09150ef5;color:#f5faf7;border:1px solid #2d4837;border-radius:16px}
+.network-member .person-card:hover{background:#163422}
+.network-member dialog::backdrop{background:#010704cf}
+.network-member #person-error{color:#ffb4aa}
+.network-member .hero{background:#09150ee8;border:1px solid #2d4837;min-height:260px}
+.network-member .hero h2{font-weight:500}
+.network-member .hero p{color:#c4d3ca}
+.network-member .hero .light-button{background:#cff5dd;color:#081c10}
+.network-member :is(#community-status,#notice:not(:empty)){background:#143b25;color:#fff;border:1px solid #579e73}
+.network-member .community-layout{min-height:65svh}
+.network-member .community-aside h1{font-weight:500}
+.network-member .shell>header{height:auto;min-height:80px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
+.network-member button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:650px){
+  .network-public .network-tree{height:100svh}
+  .network-member .space-nav{height:auto;padding:0}
+  .network-member .space-nav a{flex-direction:row;flex:initial}
+  .network-member .shell>header{gap:10px}
+  .network-member .shell>header .wordmark{flex-basis:100%}
+}
