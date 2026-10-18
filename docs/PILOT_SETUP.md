@@ -22,7 +22,7 @@ Set Supabase Auth's site URL to the production origin and allow that exact origi
 - Supabase Auth Site URL: `https://otfroots.com`. Exact allowed callbacks: `https://otfroots.com/`, `https://otf-theta.vercel.app/`, and `http://127.0.0.1:5174/`. Existing callbacks remain valid. The checked-in config mirrors the hosted values; editing it alone does not update hosted Auth.
 - No email provider or mail DNS records were configured. Hosted signup, confirmation, and recovery still need end-to-end testing with the intended email service.
 
-The domain currently serves the existing signed-in-branch deployment. GitHub automatic deployment is not connected. **Do not deploy the newer client on `main` until the kinship migration is applied and verified**, as detailed in `OTF_HANDOFF.md`. Domain setup did not apply database migrations or release that client.
+GitHub automatic deployment is not connected. The kinship migration was applied to hosted and the client on `main` deployed to the domain on 2026-10-18; see `OTF_HANDOFF.md`. Apply any future migration to hosted before deploying a client that depends on it.
 
 ## Accounts and invitations
 
