@@ -4,6 +4,12 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Cleaner sign-in artwork and layout (2026-10-18)
+
+Recreated the sign-in tree as `public/brand/roots-signin-clean.png` with the built-in image-generation tool, using the supplied roots.png as a visual reference. Simplified branches and nodes, brighter emerald/teal colors, complete visible roots and crisp contours. Reserved a separate artwork area below the welcome text and beside the form, eliminating the oversized image behind the headline. Mobile stacks copy, artwork and form. Only welcome/sign-in styling changes; original logo, favicon and black family workspace remain unchanged. Exact prompt and provenance are in `docs/VISUAL_DESIGN.md`.
+
+Syntax checks, five model tests, twelve UI tests, build and whitespace checks passed. Vercel `dpl_E8YUuKAarffLxTueafPkxCyaWLt2` reached READY at https://otfroots.com. Live desktop/390px browser review confirmed the full 1254px asset loaded, artwork did not overlap the headline or sign-in form, and no horizontal overflow. No database/auth changes.
+
 ## Static Roots logo login background (2026-10-18)
 
 Replaced the login/welcome moving network tree with the supplied `/brand/roots.png` as a large static decorative background on black. Responsive positioning and a dark overlay keep the text and sign-in panel readable. Removed scenery animation initialization and pause controls; family pages still have plain black backgrounds with green outlines. Header logo and favicon unchanged. The source PNG is not edited.

@@ -7,7 +7,7 @@ test('welcome shows one static Roots backdrop and removes it on entering the fam
   decorateWelcome(root);
   expect(document.querySelector('.network-backdrop')).toBeNull();
   expect(document.querySelector('[data-motion-toggle]')).toBeNull();
-  expect(document.querySelector('.logo-backdrop img').getAttribute('src')).toBe('/brand/roots.png');
+  expect(document.querySelector('.logo-backdrop img').getAttribute('src')).toBe('/brand/roots-signin-clean.png');
   expect(document.querySelector('.logo-backdrop').getAttribute('aria-hidden')).toBe('true');
   expect(document.querySelector('.welcome .hero')).toBeNull();
   decorateWelcome(root);

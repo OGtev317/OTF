@@ -1,5 +1,12 @@
 /* The same quiet, dark surfaces across family, public, and fictional pages. */
 :root{background:#030806;color-scheme:dark}
+/* Sign-in artwork has its own space so text and controls stay crisp. */
+.network-welcome .welcome{padding-bottom:0}
+.network-welcome .auth-grid{gap:76px}
+.network-welcome #pilot{padding-top:54px;padding-bottom:64px}
+.network-welcome .auth-grid>.card{background:#050b08;border-color:#31543d;box-shadow:0 20px 60px #0006}
+@media(max-width:1000px){.network-welcome .auth-grid{gap:36px}.logo-backdrop{height:290px}}
+@media(max-width:650px){.network-welcome #pilot{padding:32px 22px 44px}.network-welcome .auth-grid{gap:30px}.logo-backdrop{height:230px;margin-top:20px}.logo-backdrop img{object-position:center}.network-welcome .welcome>p{max-width:360px}.network-welcome .welcome h1{font-size:38px}}
 .brand.brand-roots{display:inline-flex;align-items:center;gap:11px;letter-spacing:normal;flex-shrink:0;text-decoration:none;min-height:48px}
 .brand.brand-roots .brand-symbol,.brand-symbol{display:block;position:relative;overflow:hidden;flex-shrink:0;width:56px;height:56px;margin:0}
 .brand-symbol img{display:block;position:absolute;width:240%;height:240%;max-width:none;left:50%;top:50%;transform:translate(-50%,-50%)}

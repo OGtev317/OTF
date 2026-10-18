@@ -1,8 +1,6 @@
 /* Static logo backdrop and welcome-page theme. */
-.logo-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#000}
-.logo-backdrop img{position:absolute;width:clamp(1200px,140vw,1900px);height:auto;max-width:none;left:40%;top:50%;transform:translate(-50%,-50%);opacity:.65}
-.logo-backdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0009,transparent 65%,#0008)}
-@media(max-width:650px){.logo-backdrop img{width:1150px;left:50%;top:340px;opacity:.5}.logo-backdrop::after{background:linear-gradient(180deg,#0003,#0008)}}
+.logo-backdrop{position:relative;pointer-events:none;width:100%;height:340px;margin-top:28px;background:#000}
+.logo-backdrop img{display:block;width:100%;height:100%;object-fit:contain;object-position:left center}
 .network-backdrop{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#030806}
 .network-welcome{background:#000;color:#f5faf7;color-scheme:dark;--green:#a9edc4;--border:#263f32}
 .network-welcome::before{display:none}
@@ -32,7 +30,7 @@ body:not(.network-welcome):not(.network-member) .pilot-header .motion-toggle{dis
 .network-welcome .pilot-pending{background:#0b1911e8;border-bottom:1px solid #233d2d;color:#b9cfc0;font-size:11px}
 .network-welcome #pilot{max-width:1280px;min-height:calc(100svh - 202px);padding:90px 48px 120px;display:flex;align-items:center}
 .network-welcome .auth-grid{width:100%;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:115px;align-items:center}
-.network-welcome .welcome{padding:0 0 100px;position:relative}
+.network-welcome .welcome{padding:0;position:relative}
 .network-welcome .welcome>.eyebrow{font-size:10px;letter-spacing:2.4px;color:#a9edc4;margin-bottom:28px}
 .network-welcome .welcome h1{font-family:'Manrope',sans-serif;font-size:clamp(42px,4.4vw,64px);font-weight:500;line-height:1.12;letter-spacing:-3px;color:#fff;text-shadow:0 2px 24px #000;margin-bottom:27px}
 .network-welcome .welcome h1 em{font-style:normal;font-weight:500;color:#b6efcb}

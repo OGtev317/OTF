@@ -1,6 +1,17 @@
 # OTF living family tree
 
-## Current welcome page: connection tree
+## Current sign-in artwork: clean Roots tree (2026-10-18)
+
+The sign-in page uses a new static tree illustration on black, displayed in a reserved area beneath the welcome copy and beside the form. The tree is no longer enlarged beyond its source resolution or placed behind text. Other pages retain plain black backgrounds and green outlines; the header logo and favicon continue using the user's original roots.png.
+
+- Asset: `public/brand/roots-signin-clean.png` (1254 × 1254 PNG).
+- Created with the built-in image-generation tool, using `public/brand/roots.png` as a visual reference. Original artwork remains unchanged.
+- Layout: `memory-scene.js`, `network-welcome.css`, `network-shared.css`. Static, without animation or pause controls.
+- Exact generation prompt:
+
+> Use case: logo-brand / sign-in background illustration. Input image 1 is a reference for the Roots family app's current tree identity, not a website screenshot. Recreate a much sharper, cleaner, refined rendition of this connected family tree for the sign-in page ONLY. Single centered complete tree with spreading canopy and visible symmetrical roots, elegant trunk formed of a few parallel circuit-like lines, evenly spaced connected nodes and restrained geometric leaf forms. Preserve the recognizable tree-and-roots silhouette and emerald, mint and subtle teal color family. Simplify the noisy tiny leaf facets into crisp deliberate branches and nodes. Strong clear contours, exceptionally clean polished vector-like graphic rendered at high resolution. Flat pure black background. Tree occupies 80 percent of a square canvas vertically, generous margins, all roots and tips fully visible. Bright but tasteful green lines, restrained highlights, NO blur, NO bloom, NO haze, NO grain, NO shadow, NO texture, NO text, NO letters, NO UI, NO border, NO mockup. This is a background illustration asset; do not add login controls. Static image, modern and calm.
+
+## Earlier welcome page: connection tree
 
 The user replaced the photographic welcome direction with a black page, white text, and light-blue signals moving through the branches, trunk, and roots of a tree. `tree-network.js` generates deterministic decorative SVG geometry; `network-welcome.css` supplies the welcome-only dark theme and CSS stroke-dash animations. The tree has no real family records, account identities, live network status, or data connections. No new image generation, video, or animation dependency is used.
 
