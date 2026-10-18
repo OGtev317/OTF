@@ -101,6 +101,7 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 - Hosted database, read-only audit: every table has row-level security, clients have SELECT only, every function is security definer with an empty search path, internal helpers are not executable by clients, the `private` schema is not exposed by the API. The four `supabase/tests` suites passed on hosted inside rolled-back transactions; afterwards no test users, families or helper functions remained (a deliberately failing probe confirmed failures are reported).
 - Browser review of live pages (Chromium and WebKit, 390 and 1280 wide): no console errors, CSP violations or overflow; labels and image alternatives present; sensible keyboard order. Signed-in views checked against a local stack.
 - Fixed: on the dark theme, link-styled light buttons ("Sign in to participate" in Community, "Open in your email app" in Members) had 1.23:1 text contrast (rule now in `network-shared.css`); the Invite card widened the Members page by about 59px at 390px (long option text and invitation link); the "Invitation ready" message no longer stays over the form.
+- Deployed `791fd5d` as `dpl_6NKA69c35GJdDWJmpubHfhkmPdNB` on otfroots.com; live recheck: branding present, no text under 4.5:1 on any public page, no errors or overflow in either browser at either width.
 
 ### Kinship, memorial keepers, email-bound invitations and paged loading (2026-10-18, branch `fix/kinship-invites-loading`)
 
