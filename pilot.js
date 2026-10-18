@@ -1,5 +1,6 @@
 import { configured, supabase } from "./supabase-client.js";
 import { decorateWelcome } from "./memory-scene.js";
+import { treeView } from "./tree-view.js";
 const root = document.querySelector("#pilot");
 const status = document.querySelector("#status");
 const esc = (v) =>
@@ -17,6 +18,7 @@ let session,
   view = "feed",
   mode = "signin",
   editing = null,
+  treeBranch = "",
   loading = false,
   loadId = 0;
 // The status floats over the page, so confirmations fade after a few seconds;
@@ -72,6 +74,7 @@ async function loadFamily() {
     "reactions",
     "people",
     "events",
+    "tree_contributions",
   ];
   const values = await Promise.all(
     tables.map((table) =>
@@ -79,10 +82,12 @@ async function loadFamily() {
     ),
   );
   if (request !== loadId || !session || fid !== familyId) return;
-  snapshot = Object.fromEntries(tables.map((table, i) => [table, values[i]]));
+  snapshot = Object.fromEntries(tables.map((table, i) => [table, values[i] || []]));
   if (!snapshot.memberships.some((m) => m.user_id === session.user.id)) {
     const lost = families.find((f) => f.id === fid)?.name;
     snapshot = null;
+    editing = null;
+    treeBranch = "";
     await refreshFamilies();
     await loadFamily();
     if (lost) removedFrom = lost;
@@ -127,20 +132,7 @@ function feed() {
     .join("")}`;
 }
 function tree() {
-  const p = editing || { name: "", story: "", parents: [] };
-  return `<div class="section-title"><h2>The people in our story</h2><small>${owner() ? "You manage the tree during this pilot." : "Your family owner manages tree edits."}</small></div><div class="people">${snapshot.people.map((person) => `<article class="card relative"><h2>${esc(person.name)}</h2><p class="post-body">${esc(person.story) || "Their story is waiting to be told."}</p><small>${person.parents.length ? "Child of " + person.parents.map((id) => esc(snapshot.people.find((x) => x.id === id)?.name || "Unknown")).join(" & ") : "Parents not recorded"}</small>${owner() ? `<button class="quiet" data-edit="${person.id}" aria-label="Edit ${esc(person.name)}">Edit story</button>` : ""}</article>`).join("") || "<p>No relatives recorded yet. Tree records do not need login accounts.</p>"}</div>${
-    owner()
-      ? `<form id="person" class="card stack"><h2>${editing ? "Edit relative" : "Add a relative"}</h2><label>Full name<input name="name" required maxlength="100" value="${esc(p.name)}"></label><label>Their story<textarea name="story" maxlength="2000">${esc(p.story)}</textarea></label><fieldset><legend>Known parents</legend><small>Relationships are unspecified for now. Leave blank if unknown.</small>${snapshot.people
-          .filter((x) => x.id !== p.id)
-          .map(
-            (x) =>
-              `<label class="check"><input name="parents" type="checkbox" value="${x.id}" ${p.parents.includes(x.id) ? "checked" : ""}>${esc(x.name)}</label>`,
-          )
-          .join(
-            "",
-          )}</fieldset><button>Save relative</button>${editing ? '<button type="button" class="quiet" id="cancel-edit">Cancel edit</button>' : ""}</form>`
-      : ""
-  }`;
+  return treeView({...snapshot,contributions:snapshot.tree_contributions},editing,owner(),session.user.id,treeBranch);
 }
 function events() {
   return `<div class="columns"><section>${snapshot.events.map((e) => `<article class="card"><h2>${esc(e.title)}</h2><small>${esc(e.event_date)} · All-day gathering</small><p class="post-body">${esc(e.detail)}</p></article>`).join("") || '<div class="card"><h2>Make time for together.</h2><p>No gatherings yet. Plan something small.</p></div>'}</section><form id="event" class="card stack"><h2>Plan a gathering</h2>${field("Name", "title", "text", 'maxlength="100"')}${field("Date", "event_date", "date")}<label>Details<textarea name="detail" maxlength="500"></textarea></label><button>Add gathering</button><small>No email notifications are sent.</small></form></div>`;
@@ -157,25 +149,39 @@ function report(text) {
   say(removedFrom ? `You no longer have access to ${removedFrom}.` : text, Boolean(removedFrom));
   removedFrom = "";
 }
-const draftForms = "#post, form[data-comment], #event";
+const draftForms = "#post, form[data-comment], #event, form[data-tree-review]";
 function formKey(form) {
-  return form.id ? `#${form.id}` : form.dataset.comment ? `form[data-comment="${form.dataset.comment}"]` : "";
+  return form.id ? `#${form.id}` : form.dataset.comment ? `form[data-comment="${form.dataset.comment}"]` : form.dataset.treeReview ? `form[data-tree-review="${form.dataset.treeReview}"]` : "";
 }
 function controlKey(el) {
-  for (const attr of ["data-react", "data-view", "data-edit", "data-remove", "data-revoke"])
+  for (const attr of ["data-react", "data-view", "data-edit", "data-remove", "data-revoke", "data-withdraw"])
     if (el.hasAttribute(attr)) return `[${attr}="${el.getAttribute(attr)}"]`;
   if (el.id) return `#${el.id}`;
   const form = el.closest("form"), scope = form && formKey(form);
   if (!scope) return "";
-  return el.name ? `${scope} [name="${el.name}"]` : el.tagName === "BUTTON" ? `${scope} button` : "";
+  return el.name ? `${scope} [name="${el.name}"]${el.type==='checkbox' ? `[value="${el.value}"]` : ''}` : el.tagName === "BUTTON" ? `${scope} button` : "";
 }
 function render() {
   document.body.classList.remove('photo-welcome');
+  const sameFamily = Boolean(session && root.dataset.familyId === familyId);
+  const oldPerson = sameFamily && savedForm !== '#person' ? root.querySelector('#person') : null;
+  const personKey = oldPerson?.dataset.person;
+  const personDraft = oldPerson ? [...oldPerson.querySelectorAll('[name]')].map(el=>[el.name,el.value,el.checked]) : [];
   const active = root.contains(document.activeElement) ? controlKey(document.activeElement) : "";
   const drafts = [...root.querySelectorAll(draftForms)]
-    .filter((form) => formKey(form) !== savedForm)
+    .filter((form) => sameFamily && formKey(form) !== savedForm)
     .flatMap((form) => [...form.querySelectorAll("input, textarea")].filter((el) => el.value).map((el) => [controlKey(el), el.value]));
   paint();
+  root.dataset.familyId = session ? familyId : '';
+  const newPerson = root.querySelector('#person');
+  if(newPerson && newPerson.dataset.person === personKey) {
+    for(const [name,value,checked] of personDraft) {
+      if(name==='parents') {
+        const el=[...newPerson.querySelectorAll('[name=parents]')].find(el=>el.value===value);
+        if(el) el.checked=checked;
+      } else { const el=newPerson.elements.namedItem(name); if(el) el.value=value; }
+    }
+  }
   for (const [key, value] of drafts) {
     const el = key && root.querySelector(key);
     if (el && !el.value) el.value = value;
@@ -297,6 +303,8 @@ document.addEventListener("submit", (event) => {
           data,
         ),
       );
+      editing = null;
+      treeBranch = "";
       await refreshFamilies();
       await loadFamily();
       say("Welcome to your family space.");
@@ -305,21 +313,30 @@ document.addEventListener("submit", (event) => {
       await mutate("comment", { ...data, post_id: form.dataset.comment }, form);
     else if (form.id === "event") await mutate("event", data, form);
     else if (form.id === "person") {
+      const proposedEdit = Boolean(editing && !owner());
       const payload = {
         ...data,
         parents: new FormData(form).getAll("parents"),
         ...(editing ? { id: editing.id, version: editing.version } : {}),
       };
       await result(
-        supabase.rpc("family_action", {
+        supabase.rpc("tree_action", {
           fid: familyId,
-          action: "person",
+          action: "save",
           payload,
         }),
       );
       editing = null;
+      form.reset();
+      savedForm = '#person';
+      try { await loadFamily(); } finally { savedForm = ''; }
+      report(proposedEdit ? "Edit submitted for owner approval. The current record is unchanged." : "Relative saved to your family tree.");
+    } else if(form.dataset.treeReview) {
+      const decision=event.submitter?.value;
+      if(!['approve','reject'].includes(decision)) return;
+      await result(supabase.rpc('tree_action',{fid:familyId,action:decision,payload:{id:form.dataset.treeReview,note:data.note}}));
       await loadFamily();
-      say("Family tree saved.");
+      report(decision==='approve' ? 'Edit approved and applied to the family tree.' : 'Edit rejected. The record is unchanged.');
     }
   });
 });
@@ -354,6 +371,7 @@ document.addEventListener("click", (event) => {
     !["logout", "refresh", "invite"].includes(button.id) &&
     !button.dataset.react &&
     !button.dataset.remove &&
+    !button.dataset.withdraw &&
     !button.dataset.revoke
   )
     return;
@@ -363,6 +381,8 @@ document.addEventListener("click", (event) => {
       session = null;
       snapshot = null;
       familyId = "";
+      editing = null;
+      treeBranch = "";
       loadId++;
       render();
       say("Signed out.");
@@ -370,6 +390,9 @@ document.addEventListener("click", (event) => {
       await refreshFamilies();
       await loadFamily();
       report("Up to date.");
+    } else if(button.dataset.withdraw) {
+      await result(supabase.rpc('tree_action',{fid:familyId,action:'withdraw',payload:{id:button.dataset.withdraw}}));
+      await loadFamily(); report('Proposed edit withdrawn.');
     } else if (button.dataset.react)
       await mutate("react", {
         post_id: button.dataset.react,
@@ -395,11 +418,13 @@ document.addEventListener("click", (event) => {
   });
 });
 document.addEventListener("change", (event) => {
+  if(event.target.id === 'tree-branch') { treeBranch=event.target.value;render();return; }
   if (event.target.id === "family-select")
     run(async () => {
       familyId = event.target.value;
       snapshot = null;
       editing = null;
+      treeBranch = "";
       render();
       await loadFamily();
       report("Family space changed.");
@@ -414,6 +439,8 @@ if (configured) {
     } else if (event === "SIGNED_OUT") {
       snapshot = null;
       familyId = "";
+      editing = null;
+      treeBranch = "";
       loadId++;
       render();
     }

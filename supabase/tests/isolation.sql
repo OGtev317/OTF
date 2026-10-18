@@ -43,7 +43,8 @@ select public.family_action(current_setting('test.family_a')::uuid,'react',jsonb
 select public.test_assert((select count(*)=1 from public.comments),'member can comment');
 select public.test_assert((select count(*)=1 from public.reactions),'member can react');
 select public.test_assert(public.test_denied(format('select public.create_invitation(%L::uuid)',current_setting('test.family_a'))),'member cannot invite');
-select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''person'',''{"name":"Unauthorized"}'')',current_setting('test.family_a'))),'member cannot edit tree');
+select public.family_action(current_setting('test.family_a')::uuid,'person','{"name":"Member-added relative"}');
+select public.test_assert((select count(*)=3 from public.people),'member can add a relative immediately');
 select public.test_assert(public.test_denied(format('select public.family_action(%L::uuid,''remove_member'',''{"user_id":"00000000-0000-0000-0000-000000000001"}'')',current_setting('test.family_a'))),'member cannot remove owner');
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);

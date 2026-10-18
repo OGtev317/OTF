@@ -20,7 +20,7 @@ Use Node.js 24+, run `npm ci`, then `npm run dev`. Open the printed local URL. T
 
 Run `npm run check`, `npm test`, `npm run test:ui`, and `npm run build`. `npm run test:db` runs PostgreSQL isolation tests in a disposable Docker container. Google Fonts is an optional external request with system-font fallbacks. Supabase handles shared pilot records; only `/demo.html` uses browser-local fictional records. Use fictional data until the remaining pilot checks are complete.
 
-Tree relationships are currently unspecified and editable by family owners. Richer relationship types, deletion/export, a restore interface, private photo uploads, and birthday fields remain future work. There are no DAO, voting, wallet, or shared-funds features.
+In the account-backed family tree, members can add relatives immediately; changes to existing people require owner approval. Owners can edit directly, compare proposals, approve/reject with a note, and members can withdraw their pending edits. Household branch labels, explicit living/deceased/unknown status, optional birth/death dates, stories, and source notes are supported. Branches do not merge separate families or create new privacy boundaries. Tree relationships remain unspecified parent links. Typed relationships, account-linked life profiles, duplicate review, deletion/export, private photos, and a restore interface remain future work. There are no DAO, voting, wallet, or shared-funds features.
 
 ## First release direction
 

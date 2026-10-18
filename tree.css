@@ -1,0 +1,14 @@
+.tree-guidance p{margin-bottom:8px}.tree-guidance small{line-height:1.6;display:block}
+.branch-filter{display:grid;gap:8px;max-width:340px;margin:22px 0;font-size:13px}
+.branch-filter select,#person select{padding:12px;border-radius:8px;border:1px solid #cfcfbd;background:#fffdf7;color:#354b3c;max-width:100%;font:inherit}
+.tree-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.memorial-label{display:inline-block;font:italic 15px Georgia,serif;color:#68714f;margin:6px 0}
+.life-dates{font-size:12px;color:#666e5e;margin:8px 0}.relative details{font-size:12px;margin-top:12px}
+.tree-contributions{margin-top:36px}.tree-contributions summary{cursor:pointer;padding:10px 0;font-size:13px}
+.tree-review h3{font:22px Georgia,serif}.tree-review p{font-size:13px}.tree-review-form{margin-top:16px}
+.tree-comparison{overflow-x:auto}.tree-comparison table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.tree-comparison th,.tree-comparison td{vertical-align:top;text-align:left;padding:12px 8px;border-bottom:1px solid #ddd9c9;overflow-wrap:anywhere;white-space:pre-wrap}
+.tree-comparison caption{text-align:left;font-size:12px;padding:8px}.tree-comparison th:first-child{width:24%}
+.tree-warning{background:#f4ecd6;color:#67532b;padding:12px;border-radius:8px}.tree-actions{display:flex;gap:12px;flex-wrap:wrap}
+.tree-actions button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:600px){.tree-date-fields{grid-template-columns:1fr}.tree-comparison th,.tree-comparison td{padding:8px 4px}.tree-review{padding:16px}}

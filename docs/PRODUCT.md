@@ -65,9 +65,23 @@ Database family isolation, expiring single-use invitations, member removal, and 
 
 Alongside private Family Circle, a separate `/community.html` provides public chronological text posts, replies, profiles, and likes. Reading is anonymous; participation requires sign-in, explicit public-profile opt-in, and an 18+ self-attestation. No private family content is published automatically. Reports and signed-in blocking are available; moderation is operator-managed during the pilot. See [Community scope and operator guide](COMMUNITY.md). Photos, following, reposts, and automated moderation are deferred.
 
-### Extended-family contributions (requested next)
+### Extended-family contributions
 
-The user wants multiple household branches within a shared extended-family tree, with individual contributions and memorial records for deceased relatives. Approval policy is awaiting the user's choice. Do not merge existing separate family spaces, expose their records to one another, or infer who is deceased. Design memorial dates, stories, sources, and relationship types with unknown dates and non-account relatives supported. Existing tree edits remain owner-only until the contribution workflow is implemented and verified.
+Members can now add relatives immediately. Member edits to existing people, including their own additions, require owner approval. Owner edits apply directly. The owner compares original/proposed fields, approves or rejects with an optional note; contributors can withdraw pending edits. Approval rechecks record version, contributor membership, same-family parent links, and ancestry cycles. Applied edits retain the prior record privately. Proposals are visible only to their current-member submitter and family owners.
+
+People support household branch labels, explicit unknown/living/deceased status, optional exact birth/death dates, a story, and source/recollection notes. Unknown dates stay blank; approximate dates can be described in the story. Branch labels are organizational only: all members of the family retain the same tree visibility. Separate private family spaces are never automatically merged, and tree/memorial details never flow into public Community.
+
+### Next design: connected genealogy and individual life profiles (not implemented)
+
+User requested a system in which a relative records children and grandchildren, connects to cousins/aunts/uncles, and has an individual profile for their life, work, and things they want family to know.
+
+- Keep **account**, **tree person**, and **life profile** distinct. People can exist without accounts; an adult can later claim an existing person through a reviewed link rather than creating a duplicate. An unclaimed record does not authorize account access. Children and deceased people do not need logins.
+- Record explicit, typed relationships: parent/child (biological, adoptive, step, guardian, or unspecified), and partners. Do not assume gender, marriage, or a single household. Biological age checks must not incorrectly reject adoptive/step/guardian relationships.
+- Derive grandparents, siblings, aunts/uncles, and cousins from confirmed relationship paths. Do not infer kinship from heritage, ethnicity, surname, age, or birth date alone. Heritage is optional self-described profile context, not an identity match or automatic placement rule. Compute age from birth date instead of storing an age that goes stale.
+- Use names, dates, and shared relatives only to suggest possible duplicate records. Show a comparison for family confirmation before linking or merging. Preserve alternative/conflicting information and provenance; never silently merge on a name/date match. Cross-family linking requires an explicit future consent/access design.
+- Let a person manage their own life-profile fields (bio, work, interests, achievements, family updates) without routing every personal update through genealogy review. Relationship and identity corrections still follow the tree review policy. Public Community profiles remain separate and opt-in.
+- Minimize exposure of living people's exact birth dates, location, and workplace details. Let users choose what their family sees. Children's records need guardian controls and should not be publicly discoverable. Define claim verification, disputed edits, guardianship, account deletion, and per-field privacy before activation.
+- First implementation slice after design approval: typed parent/child links, relationship-path labels, reviewed claim of an existing person, and a private self-managed life profile. Matching suggestions and cross-family connections follow after those controls are tested.
 
 - First client selected: mobile-friendly web. The initial local prototype uses dependency-free HTML/CSS/JavaScript.
 - Hosting selected: Vercel. Authentication and database selected: Supabase. Private media uploads are deferred.

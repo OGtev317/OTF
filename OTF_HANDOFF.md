@@ -67,9 +67,21 @@ Validation: syntax checks, five model tests, five UI tests (including Community 
 
 Sites skill implementation/validation guidance was used while preserving the existing Supabase/Vercel hosting choice. Direct Vercel deployment, not automatic GitHub deployment, remains the release mechanism.
 
-### Next requested milestone: extended-family contributions
+### Extended-family contribution milestone
 
-User wants multiple household branches inside an extended family and individual contributions for deceased relatives with biographical information. Asked whether owner approval is required for all contributions or only edits to existing people. Await that decision before changing owner-only tree access. Do not merge separate authorized family spaces or publish memorial/tree records to Community. Proposed scope: branches, explicit deceased status, optional/unknown birth and death dates, stories, sources, and reviewed contribution history. Not implemented yet.
+User selected immediate member additions with owner review of edits to existing records, and explicitly requested commit/push to main. Implemented in the account-backed Family tree, not the independent browser-local demo. New relatives (including memorial records) save immediately. Edits by members, including edits to relatives they added, become proposals. Owner edits apply directly. Review shows original/proposed fields; owners approve/reject with optional notes, and contributors can withdraw. Stale versions, cross-family links, current ancestry cycles, removed contributors, repeated reviews, and unauthorized direct writes are rejected by PostgreSQL.
+
+Added household branch labels/filter, unknown/living/deceased status, optional exact birth/death dates, stories, and source notes. Unknown dates remain blank; approximate dates go in the story. Branch labels do not merge private family spaces or create narrower access boundaries. No tree data is exposed through Community. Personal accounts and tree people are still separate; self-managed life profiles and typed kinship links are future work.
+
+`20261020010000_tree_contributions.sql` is additive. It moves the old `family_action` implementation into a non-client-callable private function and installs a compatible wrapper routing every old/new tree save through review-aware `tree_action`. Clients cannot invoke the legacy implementation or write helpers directly. Existing family posting/invitation/member flows remain unchanged. Legacy clients omit new fields without clearing their saved values. A signed-in member sees only their own proposals; owners see all in their family. Prior records remain in private history; UI restore is not added.
+
+Validation: syntax checks, five model tests, seven UI tests, three real PostgreSQL suites in a disposable Docker container, and Vite build pass. UI tests cover immediate memorial addition, pending edits, owner comparison/approval, draft preservation (including cleared fields and parent checkboxes), branch filtering, escaping, and disabled stale/removed-contributor approval. Local browser reviewed owner/member views and phone-width layout using fictional `tests/tree-preview.html`, which has no backend writes and is excluded from deployment. Hosted authenticated two-account interaction remains unverified while email onboarding is pending.
+
+Deployment: applied only the new migration to OTF after checking that its RPC/table were absent. Hosted privilege checks confirm the authenticated tree RPC is enabled while anonymous RPC/proposal access, direct person updates, and the private legacy bypass are denied. Vercel deployment `dpl_5tff2T8CY4yRsUsBLpwXnzQbZTdd` reached READY at https://otf-theta.vercel.app. No real family content was used for testing or copied into source. Like earlier migrations, this migration must not be blindly reapplied or assumed present in the Supabase CLI migration ledger. Sites skill validation guidance informed the local review while retaining Supabase/Vercel.
+
+### Next requested design: genealogy placement and personal profiles
+
+While finishing the contribution milestone, user asked to map relationship-based placement across children, grandchildren, cousins, aunts/uncles, plus private individual life/work profiles. This is a design request, not yet implemented. The proposed model and privacy/claim boundaries are in `docs/PRODUCT.md`. Birth dates/age can check plausibility, but heritage and dates cannot establish kinship. Explicit parent/child links produce derived relationship labels. Do not infer relationships, auto-merge duplicates, link separate private family spaces, or grant account access based on tree identity alone.
 
 ### Living tree visual update
 
