@@ -2,7 +2,7 @@
 :root{background:#030806;color-scheme:dark}
 .brand.brand-roots{display:inline-flex;align-items:center;gap:11px;letter-spacing:normal;flex-shrink:0;text-decoration:none;min-height:48px}
 .brand.brand-roots .brand-symbol,.brand-symbol{display:block;position:relative;overflow:hidden;flex-shrink:0;width:56px;height:56px;margin:0}
-.brand-symbol img{display:block;position:absolute;width:280%;height:280%;max-width:none;left:50%;top:50%;transform:translate(-50%,-49%)}
+.brand-symbol img{display:block;position:absolute;width:240%;height:240%;max-width:none;left:50%;top:50%;transform:translate(-50%,-50%)}
 .brand.brand-roots .brand-copy{display:grid;gap:7px;margin:0;font-family:'Manrope',sans-serif;letter-spacing:normal}
 .brand-roots strong{font-size:24px;font-weight:800;line-height:1;letter-spacing:-1px;color:#f5faf7;white-space:nowrap}
 .brand-roots strong b{font-weight:500;color:#b0ffd0}

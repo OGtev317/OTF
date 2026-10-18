@@ -4,7 +4,13 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
-## Supplied PNG brand replacement (2026-10-18)
+## Roots PNG identity (2026-10-18)
+
+Replaced all website logo and favicon references with `/brand/roots.png`, a byte-identical copy of the user's Downloads artwork. Adjusted CSS framing to fit the entire blue-green tree and its roots without modifying the original image. Previous `otf.png` remains unused; website colors, wordmark and behavior are unchanged. Sites guidance informed responsive checks; Vercel/Supabase retained.
+
+Syntax checks, five model tests, twelve UI tests, build and whitespace checks passed. Vercel deployment `dpl_9GdeGpKuraAGd87Ssc9gmGJmBDvo` reached READY at https://otfroots.com. Live browser verified the PNG loaded, full tree framing, and no horizontal overflow at 390px. No database/auth changes.
+
+## Supplied PNG brand replacement (2026-10-18, superseded by roots.png)
 
 Replaced the connected-node logo with the user's `/Users/tevdev/Downloads/otf.png` (orange emblem with a flask). `public/brand/otf.png` is a byte-identical copy; original remains untouched. Applied to family/login and Community headers, desktop demo sidebar, phone demo header and all entry-page favicons. CSS frames the transparent margins without editing the image; the OTF Roots wordmark and green animated background remain unchanged. Removed the two superseded SVG logo/icon files from current source; they remain recoverable in Git history.
 
