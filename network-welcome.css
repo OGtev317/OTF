@@ -1,6 +1,10 @@
-/* Shared signal geometry and welcome-page theme. */
+/* Static logo backdrop and welcome-page theme. */
+.logo-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#000}
+.logo-backdrop img{position:absolute;width:clamp(1200px,140vw,1900px);height:auto;max-width:none;left:40%;top:50%;transform:translate(-50%,-50%);opacity:.65}
+.logo-backdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0009,transparent 65%,#0008)}
+@media(max-width:650px){.logo-backdrop img{width:1150px;left:50%;top:340px;opacity:.5}.logo-backdrop::after{background:linear-gradient(180deg,#0003,#0008)}}
 .network-backdrop{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#030806}
-.network-welcome{background:#030806;color:#f5faf7;color-scheme:dark;--green:#a9edc4;--border:#263f32}
+.network-welcome{background:#000;color:#f5faf7;color-scheme:dark;--green:#a9edc4;--border:#263f32}
 .network-welcome::before{display:none}
 .network-welcome .network-backdrop{display:block}
 .network-tree{position:absolute;width:100%;height:100%;inset:0;overflow:visible}

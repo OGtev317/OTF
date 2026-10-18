@@ -4,6 +4,14 @@
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
+## Static Roots logo login background (2026-10-18)
+
+Replaced the login/welcome moving network tree with the supplied `/brand/roots.png` as a large static decorative background on black. Responsive positioning and a dark overlay keep the text and sign-in panel readable. Removed scenery animation initialization and pause controls; family pages still have plain black backgrounds with green outlines. Header logo and favicon unchanged. The source PNG is not edited.
+
+Syntax checks, five model tests, twelve UI tests, build and whitespace checks passed. Updated the existing scene test for a single static logo background, removal on sign-in, return on sign-out and absence of signal paths/controls. Desktop and 390px browser review verified the PNG loaded with no horizontal overflow. Sites guidance informed responsive review; Vercel/Supabase retained and no database/auth changes made.
+
+Released as Vercel `dpl_J72xXXh6b8kHVxG5jKbRPLyDZTRQ` (READY) at https://otfroots.com. Live browser verified the static roots.png background loaded, the sign-in form remained present and there were zero signal paths or motion controls.
+
 ## Family feed focus; Community website paused (2026-10-18)
 
 User requested removing Community and focusing on posting within each family, similar to X. Removed the Community header link and Vite production entry. Vercel redirects `/community.html` and `/community` to `/` (temporary 307). Community source, database records, RPCs and public-read permissions remain retained; this is withdrawal of its website, not API decommissioning or data deletion.
