@@ -45,3 +45,5 @@
   .network-member .shell>header{gap:10px}
   .network-member .shell>header .wordmark{flex-basis:100%}
 }
+/* Light buttons that are links keep dark text on the dark theme (the theme lightens every link). */
+.network-member a.light-button{background:#cff5dd;color:#081c10}

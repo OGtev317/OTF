@@ -86,6 +86,14 @@ Noted, not changed (the initial migration is already applied to the hosted proje
 
 ## Next work
 
+### Deployment review (2026-10-18, after the kinship release)
+
+- Vercel: production on https://otfroots.com, www 308 to apex, HSTS, CSP and the other security headers on every page; repository files (docs, config, tests, `.vercel`, `assets/source`) are not served. Codex's `dpl_GRRx…` had been deployed from uncommitted branding work; that work is now `cb74a81`.
+- Supabase Auth (public settings): email sign-in only, confirmation required, anonymous sign-ins off. The email templates in `supabase/templates/` are still to be set when the email service exists.
+- Hosted database, read-only audit: every table has row-level security, clients have SELECT only, every function is security definer with an empty search path, internal helpers are not executable by clients, the `private` schema is not exposed by the API. The four `supabase/tests` suites passed on hosted inside rolled-back transactions; afterwards no test users, families or helper functions remained (a deliberately failing probe confirmed failures are reported).
+- Browser review of live pages (Chromium and WebKit, 390 and 1280 wide): no console errors, CSP violations or overflow; labels and image alternatives present; sensible keyboard order. Signed-in views checked against a local stack.
+- Fixed: on the dark theme, link-styled light buttons ("Sign in to participate" in Community, "Open in your email app" in Members) had 1.23:1 text contrast (rule now in `network-shared.css`); the Invite card widened the Members page by about 59px at 390px (long option text and invitation link); the "Invitation ready" message no longer stays over the form.
+
 ### Kinship, memorial keepers, email-bound invitations and paged loading (2026-10-18, branch `fix/kinship-invites-loading`)
 
 Fixes for four gaps found in review: memorials were open to every member and every owner; invitations were bearer codes not tied to a person; the tree had no relationship types, account links or profiles; the family page fetched everything in single requests that Supabase caps at 1,000 rows.

@@ -421,7 +421,7 @@ document.addEventListener("submit", (event) => {
       inviteResult = { code, email, person: data.person || "" };
       savedForm = "#invite-form";
       try { await loadFamily(); } finally { savedForm = ""; }
-      say("Invitation ready. Send it from your email app or copy the link.", true);
+      say("Invitation ready. Send it from your email app or copy the link.");
     } else if(form.dataset.treeReview) {
       const decision=event.submitter?.value;
       if(!['approve','reject'].includes(decision)) return;

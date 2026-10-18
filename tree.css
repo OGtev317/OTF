@@ -20,3 +20,6 @@
 .kin-list .check:has(input:not(:checked)) select{display:none}
 .relative .tree-actions{margin-top:12px}.member .tree-actions{flex-shrink:0}
 .network-member .kin-label{color:#a1efbd}.network-member :is(.kin-note,.kin-account){color:#b9cec1}
+/* Members: long option names and invitation links must not widen the card on phones. */
+#invite-form,#invite-code,#invite-form>*,#invite-code>*{min-width:0}
+#invite-form :is(input,select),#invite-code input{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}
