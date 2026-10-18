@@ -4,40 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#030806" />
+    <meta
+      name="description"
+      content="Roots fictional demo — the family app with a made-up family, kept in your browser."
+    />
     <title>Roots — Fictional demo</title>
     <link rel="icon" type="image/png" href="/brand/roots.png" />
-    <link rel="stylesheet" href="/demo-theme.css" />
+    <link rel="stylesheet" href="/theme.css" />
   </head>
-  <body class="network-member network-public">
-    <aside class="sidebar">
-      <a class="brand brand-roots" href="/" aria-label="Roots — home"><span class="brand-symbol"><img src="/brand/roots.png" width="1000" height="1000" alt=""></span><span class="brand-copy"><strong>Roots</strong></span></a>
-      <div class="family-label">
-        <span class="family-symbol">B</span>
-        <div>The Bennetts<small>Fictional demo family</small></div>
-      </div>
-      <nav aria-label="Main navigation">
-        <a href="#home" data-view="home">⌂ <span>Family home</span></a
-        ><a href="#tree" data-view="tree">♧ <span>Our family tree</span></a
-        ><a href="#gatherings" data-view="gatherings"
-          >☷ <span>Gatherings</span></a
-        >
-      </nav>
-      <div class="sidebar-bottom">Different branches.<br />Same roots.</div>
-    </aside>
-    <div class="shell">
-      <header>
-        <a class="wordmark" href="/"><span class="brand-symbol mobile-brand-mark"><img src="/brand/roots.png" width="1000" height="1000" alt=""></span>Roots · Back to sign in</a
-        ><span class="demo-pill">FICTIONAL DEMO</span>
-      </header>
-      <div class="demo-note">
-        Fictional data · saved in this browser only. Please don’t enter private
-        family information.
-      </div>
-      <main id="main"></main>
-      <footer>Our stories deserve a place to belong.</footer>
-    </div>
-    <dialog id="person-dialog" aria-labelledby="dialog-title"></dialog>
-    <div id="notice" role="status" aria-live="polite"></div>
-    <script type="module" src="/app.js"></script>
+  <body class="network-welcome">
+    <header class="pilot-header">
+      <a class="brand brand-roots" href="/" aria-label="Roots — home"><span class="brand-symbol"><img src="/brand/roots.png" width="1000" height="1000" alt=""></span><span class="brand-copy"><strong>Roots</strong></span></a
+      ><span class="demo-pill">FICTIONAL DEMO</span>
+      <div id="account"></div>
+    </header>
+    <div class="pilot-pending">This is the real Roots app with a made-up family. Changes stay in this browser only; please don’t enter real family information. <button class="quiet" id="demo-reset" type="button">Start over</button></div>
+    <main id="pilot"><p role="status">Opening the fictional family…</p></main>
+    <p id="status" role="status" aria-live="polite"></p>
+    <footer>
+      Different branches. Same roots.<a href="/">Back to sign in →</a>
+    </footer>
+    <script type="module" src="/demo.js"></script>
   </body>
 </html>

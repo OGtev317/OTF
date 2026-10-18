@@ -6,7 +6,7 @@ const api = vi.hoisted(() => ({
   auth: { getSession: vi.fn(async () => ({ data: { session: { user: { id: 'owner' } } } })), onAuthStateChange: vi.fn() },
   from: vi.fn(), rpc: vi.fn(async () => ({ data: [] })),
 }));
-vi.mock('../supabase-client.js', () => ({ configured: true, supabase: api }));
+vi.mock('../supabase-client.js', () => ({ configured: true, demo: false, supabase: api }));
 const pad = (n) => String(n).padStart(4, '0');
 fixture.rows = {
   families: [{ id: 'family-a', name: 'Fictional large family' }],

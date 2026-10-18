@@ -17,7 +17,7 @@ const api=vi.hoisted(()=>({
   from:vi.fn(),
   rpc:vi.fn(),
 }));
-vi.mock('../supabase-client.js',()=>({configured:true,supabase:api}));
+vi.mock('../supabase-client.js',()=>({configured:true,demo:false,supabase:api}));
 const rows=fixture.rows, owns=()=>fixture.user==='owner';
 api.from.mockImplementation(table=>query(()=>table==='tree_contributions'&&!owns()?rows[table].filter(c=>c.submitted_by===fixture.user):rows[table]));
 api.rpc.mockImplementation(async(name,{action,payload}={})=>{

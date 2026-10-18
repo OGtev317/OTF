@@ -18,7 +18,7 @@ const api = vi.hoisted(()=>({
     return {data:null};
   }),
 }));
-vi.mock('../supabase-client.js',()=>({configured:true,supabase:api}));
+vi.mock('../supabase-client.js',()=>({configured:true,demo:false,supabase:api}));
 test('public browsing → adult opt-in → post/like/report/block → signout; drafts and escaping',async()=>{
   document.body.innerHTML='<div id="account"></div><main id="community"></main><p id="community-status"></p>';
   await import('../community.js');

@@ -1,6 +1,0 @@
-@layer base, pilot, theme;
-@import "./style.css" layer(base);
-@import "./earthy.css" layer(theme);
-@import "./network-welcome.css" layer(theme);
-@import "./network-member.css" layer(theme);
-@import "./network-shared.css" layer(theme);

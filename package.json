@@ -7,8 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test model.test.js",
-    "check": "node --check app.js && node --check model.js && node --check pilot.js && node --check supabase-client.js && node --check community.js && node --check tree-view.js && node --check memory-scene.js && node --check tree-network.js && node --check kinship.js && node --check tree-view.js",
+    "test": "vitest run",
+    "check": "node --check pilot.js && node --check supabase-client.js && node --check community.js && node --check tree-view.js && node --check memory-scene.js && node --check tree-network.js && node --check kinship.js && node --check demo-backend.js && node --check demo.js",
     "test:db": "node scripts/test-db.mjs",
     "test:ui": "vitest run"
   },

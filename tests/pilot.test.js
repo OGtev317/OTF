@@ -21,7 +21,7 @@ const api = vi.hoisted(() => ({
     return {data:null};
   }),
 }));
-vi.mock('../supabase-client.js',()=>({configured:true,supabase:api}));
+vi.mock('../supabase-client.js',()=>({configured:true,demo:false,supabase:api}));
 test('account → family → shared post → invitation → sign out; failed writes preserve drafts',async()=>{
   document.body.innerHTML='<div id="account"></div><main id="pilot"></main><p id="status"></p>';
   await import('../pilot.js');

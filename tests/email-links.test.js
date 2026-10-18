@@ -10,7 +10,7 @@ const api = vi.hoisted(() => ({
   from: vi.fn(() => query(() => [])),
   rpc: vi.fn(async () => ({ data: [] })),
 }));
-vi.mock('../supabase-client.js', () => ({ configured: true, supabase: api }));
+vi.mock('../supabase-client.js', () => ({ configured: true, demo: false, supabase: api }));
 async function openWith(search) {
   vi.resetModules();
   window.history.replaceState(null, '', `/${search}`);
