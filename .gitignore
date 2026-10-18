@@ -1,0 +1,29 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+.next/
+.expo/
+coverage/
+*.tsbuildinfo
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.vercel/
+.wrangler/
+
+# Private local data
+private/
+uploads/
+backups/
+*.sqlite
+*.sqlite3
+*.db
+
+# Machine files and logs
+.DS_Store
+*.log
