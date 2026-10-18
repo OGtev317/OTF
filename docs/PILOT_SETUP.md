@@ -12,7 +12,7 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Vercel for the ap
 
 The initial schema is `supabase/migrations/20261018010000_family_pilot.sql`. It is transactional. Apply once to an empty OTF project, not to an unrelated project's database. Subsequent changes require new migrations. The hosted bootstrap uses the Supabase Management API through the CLI; its application is recorded in the handoff rather than Supabase's CLI migration ledger. Do not blindly run `db push` against an already bootstrapped project without reconciling that ledger first.
 
-Set Supabase Auth's site URL to the production origin and allow that exact origin as an authentication redirect. Keep email confirmation enabled. Password recovery returns to the root page and presents a new-password form. Avoid wildcard redirect rules for production.
+Set Supabase Auth's site URL to the production origin and allow that exact origin as an authentication redirect. Keep email confirmation enabled. Use the confirmation and recovery templates in `supabase/templates/` (also wired into `supabase/config.toml` for local stacks): their links carry a token hash, so they work when opened on a different device from the one that asked, such as a phone's mail app. Supabase's default links only work in the original browser. Password recovery returns to the root page and presents a new-password form. Avoid wildcard redirect rules for production.
 
 ## Accounts and invitations
 

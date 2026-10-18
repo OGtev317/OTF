@@ -45,12 +45,32 @@ test('account → family → shared post → invitation → sign out; failed wri
   await vi.waitFor(()=>expect(document.querySelector('.post-body')?.textContent).toContain('<img'));
   expect(document.querySelector('.post-body img')).toBeNull();
   expect(api.rpc).toHaveBeenCalledWith('family_action',expect.objectContaining({fid:'family-a',action:'post'}));
+  // An unsent reply survives another action that redraws the page.
+  document.querySelector('.comment-form input').value='Half-written reply';
+  document.querySelector('[data-react]').click();
+  await vi.waitFor(()=>expect(document.querySelector('#status').textContent).toBe('Saved to your family space.'));
+  expect(document.querySelector('.comment-form input').value).toBe('Half-written reply');
+  // Repeated buttons have names that say who they are for.
+  fixture.rows.people.push({id:'person-a',family_id:'family-a',name:'Grandma Example',story:'',parents:[],version:1});
+  await vi.waitFor(()=>{document.querySelector('[data-view=tree]').click();expect(document.querySelector('[data-edit]')).not.toBeNull();});
+  expect(document.querySelector('[data-edit]').getAttribute('aria-label')).toBe('Edit Grandma Example');
   fixture.invite=crypto.randomUUID();
   document.querySelector('[data-view=members]').click();
   document.querySelector('#invite').click();
   await vi.waitFor(()=>expect(document.querySelector('#invite-code input')?.value).toBe(fixture.invite));
-  document.querySelector('#logout').click();
-  await vi.waitFor(()=>expect(document.querySelector('#auth-form')).not.toBeNull());
+  // A pasted code with spaces and a line break is cleaned; an incomplete one is refused before any request.
+  document.querySelector('details').open=true;
+  const join=document.querySelector('#join-family');
+  join.querySelector('[name=member_name]').value='Sample relative';
+  join.querySelector('[name=code]').value=' abc ';
+  join.querySelector('button').click();
+  await vi.waitFor(()=>expect(document.querySelector('#status').textContent).toMatch(/looks incomplete/));
+  expect(api.rpc).not.toHaveBeenCalledWith('accept_invitation',expect.anything());
+  const code='ab'.repeat(32);
+  join.querySelector('[name=code]').value=`  ${code.slice(0,30)}\n${code.slice(30).toUpperCase()} `;
+  join.querySelector('button').click();
+  await vi.waitFor(()=>expect(api.rpc).toHaveBeenCalledWith('accept_invitation',{code,member_name:'Sample relative'}));
+  await vi.waitFor(()=>{document.querySelector('#logout')?.click();expect(document.querySelector('#auth-form')).not.toBeNull();});
   expect(document.body.textContent).not.toContain('Sample family');
   expect(document.body.textContent).not.toContain('Hello family');
 });

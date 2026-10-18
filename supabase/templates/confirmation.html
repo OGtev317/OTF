@@ -1,0 +1,4 @@
+<h2>Welcome to OTF</h2>
+<p>Confirm your email address to finish creating your account. An account on its own does not give access to any family; you join with an invitation or start your own family space.</p>
+<p><a href="{{ if .RedirectTo }}{{ .RedirectTo }}{{ else }}{{ .SiteURL }}{{ end }}?token_hash={{ .TokenHash }}&type=email">Confirm my email</a></p>
+<p>This link works on any device and can be used once. If you did not create an OTF account, you can ignore this email.</p>

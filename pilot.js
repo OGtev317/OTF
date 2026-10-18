@@ -18,8 +18,13 @@ let session,
   editing = null,
   loading = false,
   loadId = 0;
-const say = (text) => {
+// The status floats over the page, so confirmations fade after a few seconds;
+// errors and anything the person must act on stay until the next message.
+let fade;
+const say = (text, stay = false) => {
   status.textContent = text;
+  clearTimeout(fade);
+  if (text && !stay) fade = setTimeout(() => { if (status.textContent === text) status.textContent = ""; }, 6000);
 };
 const field = (label, name, type = "text", extra = "") =>
   `<label>${label}<input name="${name}" type="${type}" ${extra} required></label>`;
@@ -40,11 +45,14 @@ function authScreen() {
   root.innerHTML = `<div class="auth-grid"><section class="welcome"><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>A little closer.<br>A little more together.</h1><p>Catch up on the everyday.<br>Keep the stories that matter.</p><div class="hero"><div><h2>Different branches.<br>Same roots.</h2><p>Your family space starts with an invitation.</p></div></div><a href="/demo.html">Take a look around the fictional demo →</a></section><form id="auth-form" class="card stack"><h2>${signup ? "Create your account" : recovery ? "Find your way back" : reset ? "Choose a new password" : "Welcome back"}</h2><p>${signup ? "An account does not grant family access. Join with an invitation or create your own space." : recovery ? "We’ll send a password-reset link if this email has an account." : reset ? "Use a new password with at least 12 characters." : "Sign in to your family’s space."}</p>${!reset ? field("Email", "email", "email", 'autocomplete="email" maxlength="254"') : ""}${!recovery ? field("Password", "password", "password", `minlength="12" maxlength="128" autocomplete="${signup || reset ? "new-password" : "current-password"}"`) : ""}<button>${signup ? "Create account" : recovery ? "Send reset link" : reset ? "Save new password" : "Sign in"}</button>${!reset ? `<button class="quiet" type="button" data-mode="${signup || recovery ? "signin" : "signup"}">${signup || recovery ? "Back to sign in" : "New here? Create an account"}</button>${!signup && !recovery ? '<button class="quiet" type="button" data-mode="recover">Forgot your password?</button>' : ""}` : ""}</form></div>`;
 }
 async function refreshFamilies() {
+  const current = families.find((f) => f.id === familyId);
   families = await result(
     supabase.from("families").select("id,name").order("created_at"),
   );
-  if (!families.some((f) => f.id === familyId))
+  if (!families.some((f) => f.id === familyId)) {
+    if (current) removedFrom = current.name;
     familyId = families[0]?.id || "";
+  }
 }
 async function loadFamily() {
   const request = ++loadId;
@@ -70,9 +78,12 @@ async function loadFamily() {
   if (request !== loadId || !session || fid !== familyId) return;
   snapshot = Object.fromEntries(tables.map((table, i) => [table, values[i]]));
   if (!snapshot.memberships.some((m) => m.user_id === session.user.id)) {
+    const lost = families.find((f) => f.id === fid)?.name;
     snapshot = null;
     await refreshFamilies();
-    return loadFamily();
+    await loadFamily();
+    if (lost) removedFrom = lost;
+    return;
   }
   snapshot.posts.sort((a, b) => b.created_at.localeCompare(a.created_at));
   snapshot.comments.sort((a, b) => a.created_at.localeCompare(b.created_at));
@@ -93,7 +104,7 @@ const author = (id) =>
       "Former family member",
   );
 function onboarding() {
-  return `<div class="columns"><form id="create-family" class="card stack"><h2>Start your family space</h2><p>An empty home for your own family. You’ll be its first owner.</p>${field("Family name", "family_name", "text", 'maxlength="100"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Create family</button></form><form id="join-family" class="card stack"><h2>Invited by a relative?</h2><p>Paste their invitation code. Each code can be used once and expires after seven days.</p>${field("Invitation code", "code", "text", 'autocomplete="off" maxlength="64" minlength="64"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Join family</button></form></div>`;
+  return `<div class="columns"><form id="create-family" class="card stack"><h2>Start your family space</h2><p>An empty home for your own family. You’ll be its first owner.</p>${field("Family name", "family_name", "text", 'maxlength="100"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Create family</button></form><form id="join-family" class="card stack"><h2>Invited by a relative?</h2><p>Paste their invitation code. Each code can be used once and expires after seven days.</p>${field("Invitation code", "code", "text", 'autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Join family</button></form></div>`;
 }
 function feed() {
   return `<form id="post" class="card stack"><label>What’s happening in your corner?<textarea name="body" maxlength="2000" required placeholder="A small win, a memory, or just a hello…"></textarea></label><button>Share with family</button></form>${snapshot.posts.length ? "" : '<div class="card empty"><h2>Every family story starts somewhere.</h2><p>Be the first to say hello.</p></div>'}${snapshot.posts
@@ -114,7 +125,7 @@ function feed() {
 }
 function tree() {
   const p = editing || { name: "", story: "", parents: [] };
-  return `<div class="section-title"><h2>The people in our story</h2><small>${owner() ? "You manage the tree during this pilot." : "Your family owner manages tree edits."}</small></div><div class="people">${snapshot.people.map((person) => `<article class="card relative"><h2>${esc(person.name)}</h2><p class="post-body">${esc(person.story) || "Their story is waiting to be told."}</p><small>${person.parents.length ? "Child of " + person.parents.map((id) => esc(snapshot.people.find((x) => x.id === id)?.name || "Unknown")).join(" & ") : "Parents not recorded"}</small>${owner() ? `<button class="quiet" data-edit="${person.id}">Edit story</button>` : ""}</article>`).join("") || "<p>No relatives recorded yet. Tree records do not need login accounts.</p>"}</div>${
+  return `<div class="section-title"><h2>The people in our story</h2><small>${owner() ? "You manage the tree during this pilot." : "Your family owner manages tree edits."}</small></div><div class="people">${snapshot.people.map((person) => `<article class="card relative"><h2>${esc(person.name)}</h2><p class="post-body">${esc(person.story) || "Their story is waiting to be told."}</p><small>${person.parents.length ? "Child of " + person.parents.map((id) => esc(snapshot.people.find((x) => x.id === id)?.name || "Unknown")).join(" & ") : "Parents not recorded"}</small>${owner() ? `<button class="quiet" data-edit="${person.id}" aria-label="Edit ${esc(person.name)}">Edit story</button>` : ""}</article>`).join("") || "<p>No relatives recorded yet. Tree records do not need login accounts.</p>"}</div>${
     owner()
       ? `<form id="person" class="card stack"><h2>${editing ? "Edit relative" : "Add a relative"}</h2><label>Full name<input name="name" required maxlength="100" value="${esc(p.name)}"></label><label>Their story<textarea name="story" maxlength="2000">${esc(p.story)}</textarea></label><fieldset><legend>Known parents</legend><small>Relationships are unspecified for now. Leave blank if unknown.</small>${snapshot.people
           .filter((x) => x.id !== p.id)
@@ -132,9 +143,42 @@ function events() {
   return `<div class="columns"><section>${snapshot.events.map((e) => `<article class="card"><h2>${esc(e.title)}</h2><small>${esc(e.event_date)} · All-day gathering</small><p class="post-body">${esc(e.detail)}</p></article>`).join("") || '<div class="card"><h2>Make time for together.</h2><p>No gatherings yet. Plan something small.</p></div>'}</section><form id="event" class="card stack"><h2>Plan a gathering</h2>${field("Name", "title", "text", 'maxlength="100"')}${field("Date", "event_date", "date")}<label>Details<textarea name="detail" maxlength="500"></textarea></label><button>Add gathering</button><small>No email notifications are sent.</small></form></div>`;
 }
 function members() {
-  return `<section class="card"><h2>Your people</h2>${snapshot.memberships.map((m) => `<div class="member"><span>${esc(m.display_name)} <small>${m.role}</small></span>${owner() && m.role !== "owner" ? `<button class="quiet" data-remove="${m.user_id}">Remove access</button>` : ""}</div>`).join("")}</section>${owner() ? `<section class="card stack"><h2>Bring someone in</h2><p>Create a code and share it privately with one relative. Anyone signed in who holds the code can accept it. You can revoke it before use.</p><button id="invite">Create invitation code</button><div id="invite-code"></div><h3>Invitations</h3>${snapshot.invitations.map((i) => `<div class="member"><small>${i.revoked_at ? "Revoked" : i.used_at ? "Accepted" : Date.parse(i.expires_at) < Date.now() ? "Expired" : "Available"} · expires ${esc(new Date(i.expires_at).toLocaleDateString())}</small>${!i.used_at && !i.revoked_at ? `<button class="quiet" data-revoke="${i.id}">Revoke</button>` : ""}</div>`).join("") || "<p>No invitations created.</p>"}</section>` : ""}<details><summary>Create or join another family</summary>${onboarding()}</details>`;
+  return `<section class="card"><h2>Your people</h2>${snapshot.memberships.map((m) => `<div class="member"><span>${esc(m.display_name)} <small>${m.role}</small></span>${owner() && m.role !== "owner" ? `<button class="quiet" data-remove="${m.user_id}" aria-label="Remove access for ${esc(m.display_name)}">Remove access</button>` : ""}</div>`).join("")}</section>${owner() ? `<section class="card stack"><h2>Bring someone in</h2><p>Create a code and share it privately with one relative. Anyone signed in who holds the code can accept it. You can revoke it before use.</p><button id="invite">Create invitation code</button><div id="invite-code"></div><h3>Invitations</h3>${snapshot.invitations.map((i) => `<div class="member"><small>${i.revoked_at ? "Revoked" : i.used_at ? "Accepted" : Date.parse(i.expires_at) < Date.now() ? "Expired" : "Available"} · expires ${esc(new Date(i.expires_at).toLocaleDateString())}</small>${!i.used_at && !i.revoked_at ? `<button class="quiet" data-revoke="${i.id}" aria-label="Revoke invitation expiring ${esc(new Date(i.expires_at).toLocaleDateString())}">Revoke</button>` : ""}</div>`).join("") || "<p>No invitations created.</p>"}</section>` : ""}<details><summary>Create or join another family</summary>${onboarding()}</details>`;
+}
+// Every update re-renders the page. Keep the user's place: the focused control and any
+// unsent text in the feed, reply and gathering forms (not the form that was just saved).
+let savedForm = "";
+// A family the user was removed from during the last load, reported instead of a success message.
+let removedFrom = "";
+function report(text) {
+  say(removedFrom ? `You no longer have access to ${removedFrom}.` : text, Boolean(removedFrom));
+  removedFrom = "";
+}
+const draftForms = "#post, form[data-comment], #event";
+function formKey(form) {
+  return form.id ? `#${form.id}` : form.dataset.comment ? `form[data-comment="${form.dataset.comment}"]` : "";
+}
+function controlKey(el) {
+  for (const attr of ["data-react", "data-view", "data-edit", "data-remove", "data-revoke"])
+    if (el.hasAttribute(attr)) return `[${attr}="${el.getAttribute(attr)}"]`;
+  if (el.id) return `#${el.id}`;
+  const form = el.closest("form"), scope = form && formKey(form);
+  if (!scope) return "";
+  return el.name ? `${scope} [name="${el.name}"]` : el.tagName === "BUTTON" ? `${scope} button` : "";
 }
 function render() {
+  const active = root.contains(document.activeElement) ? controlKey(document.activeElement) : "";
+  const drafts = [...root.querySelectorAll(draftForms)]
+    .filter((form) => formKey(form) !== savedForm)
+    .flatMap((form) => [...form.querySelectorAll("input, textarea")].filter((el) => el.value).map((el) => [controlKey(el), el.value]));
+  paint();
+  for (const [key, value] of drafts) {
+    const el = key && root.querySelector(key);
+    if (el && !el.value) el.value = value;
+  }
+  if (active) root.querySelector(active)?.focus({ preventScroll: true });
+}
+function paint() {
   if (!session || mode === "reset") return authScreen();
   document.querySelector("#account").innerHTML =
     '<button class="quiet" id="logout">Sign out</button>';
@@ -173,17 +217,22 @@ async function run(task) {
         root.innerHTML = '<section class="card"><h2>Your family space could not be loaded.</h2><p>Your saved records have not been changed.</p><button id="refresh">Try again</button></section>';
       } else authScreen();
     }
-    say(error.message || "Something went wrong. Please try again.");
+    say(error.message || "Something went wrong. Please try again.", true);
   } finally {
     loading = false;
   }
 }
-async function mutate(action, payload) {
+async function mutate(action, payload, form) {
   await result(
     supabase.rpc("family_action", { fid: familyId, action, payload }),
   );
-  await loadFamily();
-  say("Saved to your family space.");
+  savedForm = form ? formKey(form) : "";
+  try {
+    await loadFamily();
+  } finally {
+    savedForm = "";
+  }
+  report("Saved to your family space.");
 }
 document.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -210,13 +259,14 @@ document.addEventListener("submit", (event) => {
           response.session
             ? "Account created."
             : "Check your email to confirm your account, then sign in.",
+          !response.session,
         );
       } else if (mode === "recover") {
         await result(
           supabase.auth.resetPasswordForEmail(data.email, { redirectTo }),
         );
         form.reset();
-        say("If this account exists, a reset link is on its way.");
+        say("If this account exists, a reset link is on its way.", true);
       } else if (mode === "reset") {
         await result(supabase.auth.updateUser({ password: data.password }));
         mode = "signin";
@@ -231,7 +281,12 @@ document.addEventListener("submit", (event) => {
         say("Welcome back.");
       }
     } else if (form.id === "create-family" || form.id === "join-family") {
-      if (data.code) data.code = data.code.trim();
+      if (form.id === "join-family") {
+        // Pasted codes often carry spaces or line breaks; the code itself is 64 hexadecimal characters.
+        data.code = data.code.replace(/\s+/g, "").toLowerCase();
+        if (!/^[0-9a-f]{64}$/.test(data.code))
+          throw new Error("That invitation code looks incomplete. Copy all 64 characters and try again.");
+      }
       familyId = await result(
         supabase.rpc(
           form.id === "create-family" ? "create_family" : "accept_invitation",
@@ -241,10 +296,10 @@ document.addEventListener("submit", (event) => {
       await refreshFamilies();
       await loadFamily();
       say("Welcome to your family space.");
-    } else if (form.id === "post") await mutate("post", data);
+    } else if (form.id === "post") await mutate("post", data, form);
     else if (form.dataset.comment)
-      await mutate("comment", { ...data, post_id: form.dataset.comment });
-    else if (form.id === "event") await mutate("event", data);
+      await mutate("comment", { ...data, post_id: form.dataset.comment }, form);
+    else if (form.id === "event") await mutate("event", data, form);
     else if (form.id === "person") {
       const payload = {
         ...data,
@@ -310,7 +365,7 @@ document.addEventListener("click", (event) => {
     } else if (button.id === "refresh") {
       await refreshFamilies();
       await loadFamily();
-      say("Up to date.");
+      report("Up to date.");
     } else if (button.dataset.react)
       await mutate("react", {
         post_id: button.dataset.react,
@@ -343,7 +398,7 @@ document.addEventListener("change", (event) => {
       editing = null;
       render();
       await loadFamily();
-      say("Family space changed.");
+      report("Family space changed.");
     });
 });
 if (configured) {
@@ -362,10 +417,39 @@ if (configured) {
   run(async () => {
     const data = await result(supabase.auth.getSession());
     session = data.session;
+    const message = await emailLink();
+    if (message) say(message, !/^(Email confirmed|Choose a new password)/.test(message));
     if (session && mode !== "reset") {
       await refreshFamilies();
       await loadFamily();
     } else render();
-    say("");
+    if (!message) say("");
   });
 } else authScreen();
+
+/**
+ * Links from emails. With the templates in supabase/templates, links carry a token hash
+ * and work on any device. Supabase's default links carry a one-time code that only works
+ * in the browser that asked for it; opened anywhere else, say so instead of failing silently.
+ */
+async function emailLink() {
+  const params = new URLSearchParams(location.search);
+  const tokenHash = params.get("token_hash"), type = params.get("type");
+  const failed = params.get("error_description") || new URLSearchParams(location.hash.slice(1)).get("error_description");
+  const code = params.get("code");
+  if (!tokenHash && !failed && !code) return "";
+  history.replaceState(null, "", location.pathname);
+  if (tokenHash && ["email", "signup", "recovery"].includes(type)) {
+    const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    if (error) return "This link has expired or was already used. Request a new one.";
+    session = data.session;
+    if (type === "recovery") {
+      mode = "reset";
+      return "Choose a new password.";
+    }
+    return "Email confirmed. Welcome to OTF.";
+  }
+  if (failed) return `${failed}. Request a new link.`;
+  if (!session) return "That link only works in the browser where it was requested. Sign in, or ask for a new link here.";
+  return "";
+}
