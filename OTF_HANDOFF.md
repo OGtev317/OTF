@@ -6,6 +6,18 @@ OTF means Only the Family. Build an app for families to connect, socialize, stay
 
 
 
+
+## Next: family onboarding, then "privacy basics" (decided 2026-10-18)
+
+The owner is onboarding their own family first (add themselves, "This is me", close relatives, invite two or three relatives). Afterwards, build the agreed **privacy basics** milestone:
+
+a. Leave Roots / delete my account, and export the family's data (account deletion currently fails: author foreign keys to `auth.users` have no `on delete`).
+b. Birth-date privacy for living people: relatives see year or age; the full date only the person (and a child's parents).
+c. A family-visible change history per person, with restore by keepers/owners (`private.person_history` already holds prior versions).
+d. Optional two-step sign-in (TOTP) for owners.
+
+Reviewed and parked: a zero-knowledge proof layer (no verifier outside Roots exists, so proofs would hide nothing Roots or the family cannot already see; it would need a new server, WebAssembly in the CSP and per-device key recovery). Revisit if families' trees are linked across spaces. Not recommended: anchoring family records on a blockchain (personal data that may need deletion; hashes of names and dates can be guessed). Possible later: end-to-end encryption of stories, photos and documents, prototyped in the demo first with a recovery design.
+
 ## Person photos (2026-10-18)
 
 - **Storage:** private bucket `family-photos` (JPEG only, 512 KB limit), files at `<family id>/<person id>/<random id>.jpg`. Policies on `storage.objects`: family members read; upload only where `private.may_set_photo` allows; delete where `private.may_remove_photo` allows. The page shows photos through signed links that expire after an hour and are renewed after 50 minutes. CSP `img-src` allows only `https://fmfsctqtnpjjfxmumolk.supabase.co`.
