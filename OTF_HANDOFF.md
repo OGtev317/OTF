@@ -9,6 +9,8 @@ OTF means Only the Family. Build an app for families to connect, socialize, stay
 
 ## Next: family onboarding, then "privacy basics" (decided 2026-10-18)
 
+Plan for connecting members (join link with owner-approved requests and "Is this you?" matching; GEDCOM import and export), based on a review of Gramps and webtrees: `docs/CONNECTING_FAMILIES.md`. It lists three decisions for the owner, notably "historical records" so imported older generations can be kept.
+
 The owner is onboarding their own family first (add themselves, "This is me", close relatives, invite two or three relatives). Afterwards, build the agreed **privacy basics** milestone:
 
 a. Leave Roots / delete my account, and export the family's data (account deletion currently fails: author foreign keys to `auth.users` have no `on delete`).
