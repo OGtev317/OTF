@@ -1,5 +1,7 @@
 # OTF handoff
 
+**Start here:** `docs/ROOTS_HANDOFF_2026-10-18.md` is the current summary (state, release steps, next work, pitfalls). The sections below are the detailed history.
+
 ## Direction
 
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
