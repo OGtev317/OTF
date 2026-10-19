@@ -23,7 +23,9 @@ test('the demo is the signed-in app with a fictional family, following the same 
 
   document.querySelector('[data-view=tree]').click();
   expect(document.querySelector('#you').textContent).toContain('You are Jordan Bennett');
-  expect([...document.querySelectorAll('.tree-gen-label')].map((h) => h.textContent)).toEqual(['Your grandparents’ generation', 'Your parents’ generation', 'Your generation']);
+  expect([...document.querySelectorAll('.tree-gen-label')].map((h) => h.textContent)).toEqual(['Your great-grandparents’ generation', 'Your grandparents’ generation', 'Your parents’ generation', 'Your generation']);
+  node('Clara Whitfield').click();
+  expect(panel().textContent).toContain('Historical record, kept by the nearest descendants with accounts: Leo & Maya');
   expect(node('Ava Bennett').textContent).toContain('Your first cousin');
   expect(node('Leo Bennett').textContent).toContain('Your aunt or uncle');
   expect(document.querySelector('#tree-attention h3').textContent).toBe('Waiting for you (2)');

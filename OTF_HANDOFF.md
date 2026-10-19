@@ -7,6 +7,15 @@ OTF means Only the Family. Build an app for families to connect, socialize, stay
 
 
 
+
+## Historical records (2026-10-18)
+
+The owner adopted the three decisions in `docs/CONNECTING_FAMILIES.md`: historical records (built now), owner-only tree export and leaving living relatives' birth dates out of imports by default (both for the later import/export work).
+
+- **Rule:** a memorial is historical when none of its recorded immediate relatives could still be alive (deceased, or born more than 110 years ago; an unknown birth date counts as possibly alive). It is kept by the nearest descendants with linked, living accounts, or by owners when there are none. All other memorials keep the immediate-family rule. Recording a possibly living immediate relative makes a record non-historical again.
+- **Database** `20261024010000_historical_records.sql` (additive): `private.possibly_living`, `private.historical_keepers`, `private.may_keep`, and `private.may_apply` now asks `may_keep` for each memorial it touches (adding, approving, rejecting, photos and visibility follow automatically). `kinship.js` mirrors it (`possiblyLiving`, `keepersOf` now returns `{keepers, historical, owners}`); the panel says who keeps a historical record. The demo family gains a historical great-grandmother (Clara Whitfield).
+- Tests: new `supabase/tests/historical.sql`; `kinship.sql` updated (its early unrelated memorial now has a living partner; the great-grandparent added by the mother is now allowed as historical); new kinship unit tests.
+
 ## Next: family onboarding, then "privacy basics" (decided 2026-10-18)
 
 Plan for connecting members (join link with owner-approved requests and "Is this you?" matching; GEDCOM import and export), based on a review of Gramps and webtrees: `docs/CONNECTING_FAMILIES.md`. It lists three decisions for the owner, notably "historical records" so imported older generations can be kept.

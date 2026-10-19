@@ -47,7 +47,7 @@ try {
     readFileSync(
       new URL("../supabase/tests/isolation.sql", import.meta.url),
       "utf8",
-    ) + '\n' + readFileSync(new URL('../supabase/tests/community.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/tree.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/kinship.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/photos.sql',import.meta.url),'utf8');
+    ) + '\n' + readFileSync(new URL('../supabase/tests/community.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/tree.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/kinship.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/photos.sql',import.meta.url),'utf8') + '\n' + readFileSync(new URL('../supabase/tests/historical.sql',import.meta.url),'utf8');
   docker(
     [
       "exec",
@@ -63,7 +63,7 @@ try {
     sql,
   );
   console.log(
-    "PASS: PostgreSQL family isolation, Community authorization, and tree additions, reviews, stale versions, cycles, memorial validation, access revocation, immediate-family memorial stewards, account links, life profiles, email-bound invitations, and person photos.",
+    "PASS: PostgreSQL family isolation, Community authorization, and tree additions, reviews, stale versions, cycles, memorial validation, access revocation, immediate-family memorial stewards, account links, life profiles, email-bound invitations, person photos, and historical records.",
   );
 } finally {
   // Only the exact unique container created by this invocation is removed.

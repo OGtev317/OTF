@@ -84,23 +84,25 @@ record and can move to other software. This is item (a) of the privacy-basics mi
 - Importing a public WikiTree branch through its read-only API.
 - An opt-in family directory searchable by name (off by default).
 
-## Decisions needed
+## Decisions (made 2026-10-18)
 
-1. **Imported and historical memorials.** Today only living immediate relatives with linked accounts
+1. **Historical records (adopted; built 2026-10-18).** Today only living immediate relatives with linked accounts
    may add or approve a memorial. Nobody alive can be the immediate relative of a great-grandparent
    born in 1880, so an imported tree's older generations could never be approved. Proposed:
    **historical records**, meaning deceased people with no immediate relative who could still be
    alive (all deceased, or born more than 110 years ago), may be added and kept by their nearest
    linked living descendants, or by owners when there are none. Recent memorials keep today's
    strict rule. This matches the original request that history be added by immediate family
-   "if the relative has brothers and sisters or any immediate family still alive".
-2. **Who may export the whole tree:** owners only (recommended, because it includes living
-   relatives), or every member.
-3. **Living relatives' birth dates on import:** left out by default (recommended), or kept.
+   "if the relative has brothers and sisters or any immediate family still alive". Only recorded
+   relatives count; an unknown birth date counts as possibly alive.
+2. **Who may export the whole tree: owners only** (adopted), because the export includes living
+   relatives.
+3. **Living relatives' birth dates on import: left out by default** (adopted); the importer may
+   choose to keep them.
 
 ## Suggested order
 
 1. Part 1: join link, requests and "Is this you?" matching.
 2. Privacy basics (deletion and export, birth-date privacy, change history, owner two-step
    sign-in), including GEDCOM and JSON export.
-3. Part 2: GEDCOM import with match review, after decision 1.
+3. Part 2: GEDCOM import with match review (historical records are now in place).

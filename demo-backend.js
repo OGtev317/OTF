@@ -30,7 +30,10 @@ function seed() {
       member("demo-ava", "Ava", "member", null, "ava"),
     ],
     people: [
-      person("rose", "Rose Bennett", { life_status: "deceased", birth_date: "1938-03-14", death_date: "2019-11-02", partners: ["james"], branch: "Shared roots", story: "Keeper of the Sunday recipes and our favorite family stories.", source_note: "Funeral program and Maya’s recollection (fictional).", added_by: "demo-maya" }),
+      // Rose's mother: nobody in her immediate family can still be alive, so she is a historical
+      // record, kept by her nearest descendants with accounts (Maya and Leo).
+      person("clara", "Clara Whitfield", { life_status: "deceased", birth_date: "1905-06-01", death_date: "1980-02-10", branch: "Shared roots", story: "Ran the general store and wrote everything down.", source_note: "Family Bible (fictional).", added_by: "demo-maya" }),
+      person("rose", "Rose Bennett", { life_status: "deceased", birth_date: "1938-03-14", death_date: "2019-11-02", parents: ["clara"], partners: ["james"], branch: "Shared roots", story: "Keeper of the Sunday recipes and our favorite family stories.", source_note: "Funeral program and Maya’s recollection (fictional).", added_by: "demo-maya" }),
       person("james", "James Bennett", { birth_date: "1936-07-02", branch: "Shared roots", story: "Always has something growing, and a story to go with it." }),
       person("maya", "Maya Bennett", { parents: ["rose", "james"], partners: ["sam"], branch: "Maya’s household", story: "There is always room for one more at my table." }),
       person("sam", "Sam Rivera", { branch: "Maya’s household", story: "Makes the best lemonade at every gathering." }),

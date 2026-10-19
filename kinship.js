@@ -78,10 +78,48 @@ export function relationTo(people, from, to) {
 
 const linkedTo = (memberships, person) => memberships.find((m) => m.person_id === person)?.user_id || "";
 
-/** Members who keep a memorial record: living immediate relatives whose accounts are linked. */
+/** Could still be alive: not recorded as deceased and not born more than 110 years ago. */
+export function possiblyLiving(person) {
+  if (!person || person.life_status === "deceased") return false;
+  if (!person.birth_date) return true;
+  const d = new Date(), [y, m, day] = person.birth_date.split("-").map(Number);
+  return d.getFullYear() - y - (d.getMonth() + 1 < m || (d.getMonth() + 1 === m && d.getDate() < day) ? 1 : 0) < 110;
+}
+
+// Linked, living accounts among the nearest descendants of `id` (any parent link).
+function nearestDescendants(people, memberships, id, extraChild = "") {
+  const depth = new Map();
+  let frontier = [...people.filter((p) => ids(p.parents).includes(id)).map((p) => p.id), ...(extraChild ? [extraChild] : [])];
+  for (let level = 1; frontier.length && level < 30; level++) {
+    const next = [];
+    for (const x of frontier) if (!depth.has(x)) { depth.set(x, level); next.push(...people.filter((p) => ids(p.parents).includes(x)).map((p) => p.id)); }
+    frontier = next;
+  }
+  const linked = memberships.filter((m) => m.person_id && depth.has(m.person_id) && people.find((p) => p.id === m.person_id)?.life_status !== "deceased");
+  const nearest = Math.min(...linked.map((m) => depth.get(m.person_id)));
+  return linked.filter((m) => depth.get(m.person_id) === nearest);
+}
+
+/**
+ * Who keeps a memorial record. Living immediate relatives with linked accounts; or, for a
+ * historical record (no immediate relative could still be alive), the nearest descendants with
+ * linked accounts, or family owners when there are none (`owners: true`).
+ */
 export function keepersOf(people, memberships, id) {
   const near = immediateFamily(people, id);
-  return memberships.filter((m) => m.person_id && near.includes(m.person_id) && people.find((p) => p.id === m.person_id)?.life_status !== "deceased");
+  const immediate = memberships.filter((m) => m.person_id && near.includes(m.person_id) && people.find((p) => p.id === m.person_id)?.life_status !== "deceased");
+  if (near.some((x) => possiblyLiving(people.find((p) => p.id === x)))) return { keepers: immediate, historical: false, owners: false };
+  const keepers = nearestDescendants(people, memberships, id);
+  return { keepers, historical: true, owners: !keepers.length };
+}
+
+/** Mirror of private.may_keep: whether `userId` keeps memorial `id`, whose immediate relatives are `near`. */
+function mayKeep({ people, memberships }, userId, isOwner, id, near, extraChild = "") {
+  const me = memberships.find((m) => m.user_id === userId)?.person_id || "";
+  if (me && near.includes(me) && people.find((p) => p.id === me)?.life_status !== "deceased") return true;
+  if (near.some((x) => possiblyLiving(people.find((p) => p.id === x)))) return false;
+  const keepers = nearestDescendants(people, memberships, id, extraChild);
+  return keepers.length ? keepers.some((m) => m.user_id === userId) : isOwner;
 }
 
 /**
@@ -89,7 +127,6 @@ export function keepersOf(people, memberships, id) {
  * (`old` is undefined for someone new) directly, or approve it when `consent` proposed it.
  */
 export function mayApply({ people, memberships }, userId, isOwner, target, old, record, extraChild = "", consent = "") {
-  const me = memberships.find((m) => m.user_id === userId)?.person_id || "";
   const parents = ids(record.parents), partners = ids(record.partners);
   const touched = new Set();
   if (record.life_status === "deceased" || old?.life_status === "deceased") touched.add(target);
@@ -99,12 +136,9 @@ export function mayApply({ people, memberships }, userId, isOwner, target, old, 
         (partners.includes(p.id) && !ids(old?.partners).includes(p.id)) ||
         (ids(p.parents).some((x) => parents.includes(x)) && !ids(p.parents).some((x) => ids(old?.parents).includes(x)))))
       touched.add(p.id);
-  if (touched.size) {
-    if (!me || people.find((p) => p.id === me)?.life_status === "deceased") return false;
-    for (const t of touched) {
-      const near = t === target && !old ? immediateFamily(people, t, record, extraChild) : immediateFamily(people, t);
-      if (!near.includes(me)) return false;
-    }
+  for (const t of touched) {
+    const near = t === target && !old ? immediateFamily(people, t, record, extraChild) : immediateFamily(people, t);
+    if (!mayKeep({ people, memberships }, userId, isOwner, t, near, t === target && !old ? extraChild : "")) return false;
   }
   const claimant = old ? linkedTo(memberships, old.id) : "";
   if (claimant && claimant !== userId && claimant !== consent) return false;

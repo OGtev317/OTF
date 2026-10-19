@@ -17,8 +17,10 @@ select public.keep('fam',public.create_family('Fictional kin','Owner'));
 select public.keep('owner',public.save('{"name":"Fictional owner","life_status":"living"}'));
 select public.tree_action(public.v('fam'),'claim',jsonb_build_object('person_id',public.v('owner')));
 select public.test_assert((select person_id=public.v('owner') from public.memberships where user_id=auth.uid()),'owner links to their own place directly');
-select public.keep('early',public.save('{"name":"Fictional grandmother","life_status":"deceased","source_note":"Owner recollection"}'));
-select public.test_assert((select count(*)=1 from public.people),'owner who is not immediate family cannot add a memorial record directly');
+-- The early memorial has a living partner in the tree, so it is not a historical record.
+select public.keep('widower',public.save('{"name":"Fictional widower","life_status":"living"}'));
+select public.keep('early',public.save(jsonb_build_object('name','Fictional grandmother','life_status','deceased','source_note','Owner recollection','partners',jsonb_build_array(public.v('widower')))));
+select public.test_assert((select count(*)=2 from public.people),'owner who is not immediate family cannot add a memorial record directly');
 select public.test_assert((select person_id is null and proposed_record->>'name'='Fictional grandmother' from public.tree_contributions where id=public.v('early')),'it waits as a proposed new relative');
 select public.keep('mom',public.save('{"name":"Fictional mother","life_status":"living"}'));
 select public.keep('child',public.save(jsonb_build_object('name','Fictional grandchild','life_status','living','parents',jsonb_build_array(public.v('mom')))));
@@ -134,7 +136,9 @@ select public.test_assert((select count(*)=1 from public.tree_contributions wher
 select public.tree_action(public.v('fam'),'approve',jsonb_build_object('id',public.v('momParent')));
 select public.test_assert((select p.id=any(m.parents) and p.added_by='00000000-0000-0000-0000-000000000031' from public.people p, public.people m where p.name='Fictional second parent' and m.id=public.v('mom')),'approval adds the parent, credited to the contributor, and links them');
 select public.keep('ggp',public.save(jsonb_build_object('name','Fictional great-grandparent','life_status','deceased','source_note','Fictional','parent_of',public.v('grandma'))));
-select public.test_assert((select count(*)=0 from public.people where name='Fictional great-grandparent'),'a grandchild cannot add a memorial great-grandparent directly');
+-- The great-grandparent's only recorded child, Grandma, has died, so this is a
+-- historical record and the nearest living descendants with accounts (the mother, the aunt) keep it.
+select public.test_assert((select count(*)=1 from public.people where name='Fictional great-grandparent'),'the nearest descendants add a historical great-grandparent directly');
 select public.test_as('31');
 
 -- Removing a member ends their invitations and profile.
