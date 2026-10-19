@@ -68,3 +68,19 @@
 @media (min-width:761px) and (max-width:1023px){.tree-layout{grid-template-columns:1fr}.tree-panel{position:static;max-height:none}}
 @media (max-width:760px){.tree-layout{grid-template-columns:1fr}.tree-canvas{display:none}.tree-panel{position:static;max-height:none}.tree-toolbar label{max-width:none}}
 @media (prefers-reduced-motion:reduce){.tree-node{transition:none}.network-member .tree-node.selected{transform:none}.tree-node.fresh{animation:none}}
+/* Person photos: round avatars (initials when there is no photo). */
+.network-member .tree-node,.tree-node{grid-template-columns:auto minmax(0,1fr);column-gap:10px}
+.tree-node-text{display:grid;gap:3px;min-width:0}
+.tree-avatar{display:inline-grid;place-items:center;flex-shrink:0;width:40px;height:40px;border-radius:50%;overflow:hidden;background:#0d2115;border:1px solid #34523f;color:#cff5dd;font-size:13px;font-weight:700;letter-spacing:.5px}
+.tree-avatar img,.tree-photo>img{width:100%;height:100%;object-fit:cover;display:block}
+.tree-avatar.small{width:32px;height:32px;font-size:11px;margin-right:10px}
+.tree-avatar.large{width:96px;height:96px;font-size:28px}
+.tree-node.memorial .tree-avatar{filter:saturate(.75)}
+.tree-photo{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tree-photo>img{width:96px;height:96px;border-radius:50%;border:1px solid #34523f}
+.tree-photo-actions{display:grid;gap:8px;justify-items:start}
+.tree-photo-pick{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:9px;border:1px solid #34523f;background:#0d2115;color:#c7dfd0;font-size:13px;font-weight:700;cursor:pointer}
+.tree-photo-pick:hover{background:#163322}
+.tree-photo-pick:focus-within{outline:2px solid #a1dcff;outline-offset:3px}
+.tree-photo-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.member{align-items:center}

@@ -1,7 +1,8 @@
 import { configured, demo, supabase } from "./supabase-client.js";
 const signOutButton = `<button class="quiet" id="logout">${demo ? "Leave demo" : "Sign out"}</button>`;
 import { decorateWelcome, decorateMember } from "./memory-scene.js";
-import { treeView, approvalNote } from "./tree-view.js";
+import { treeView, approvalNote, avatar } from "./tree-view.js";
+import { squarePhoto } from "./photo.js";
 import { drawTreeLines } from "./tree-layout.js";
 import { relationTo } from "./kinship.js";
 import { familyFeed } from "./family-feed.js";
@@ -111,6 +112,24 @@ function localDate() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+// Photos are private files; the page shows them through links that expire after an hour,
+// so new links are fetched shortly before then.
+const PHOTOS = "family-photos";
+let photoTimer;
+async function signPhotos(people) {
+  clearTimeout(photoTimer);
+  const paths = [...new Set(people.map((p) => p.photo_path).filter(Boolean))];
+  if (!paths.length) return {};
+  photoTimer = setTimeout(async () => {
+    if (!snapshot) return;
+    snapshot.photos = await signPhotos(snapshot.people);
+    render();
+  }, 50 * 60 * 1000);
+  const { data, error } = await supabase.storage.from(PHOTOS).createSignedUrls(paths, 3600);
+  // Photos are optional: without them the tree shows initials.
+  if (error) return {};
+  return Object.fromEntries((data || []).filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
+}
 async function loadFamily() {
   const request = ++loadId;
   if (!familyId) {
@@ -134,7 +153,9 @@ async function loadFamily() {
   const shown = (posts || []).slice(0, postLimit), ids = shown.map((p) => p.id);
   const [comments, reactions] = await Promise.all([forPosts("comments", fid, ids), forPosts("reactions", fid, ids)]);
   if (request !== loadId || !session || fid !== familyId) return;
-  snapshot = { memberships, people, life_profiles, posts: shown, comments, reactions, events, past_events: past_events || [], tree_contributions: [...pending, ...(decided || [])] };
+  const photos = await signPhotos(people);
+  if (request !== loadId || !session || fid !== familyId) return;
+  snapshot = { memberships, people, life_profiles, posts: shown, comments, reactions, events, past_events: past_events || [], tree_contributions: [...pending, ...(decided || [])], photos };
   morePosts = (posts || []).length > postLimit;
   if (!snapshot.memberships.some((m) => m.user_id === session.user.id)) {
     const lost = families.find((f) => f.id === fid)?.name;
@@ -193,7 +214,7 @@ function members() {
   const sent = inviteResult && invitationMessage(inviteResult);
   const roster = snapshot.memberships.map((m) => {
     const about = snapshot.life_profiles.find((p) => p.user_id === m.user_id && (p.about || p.work || p.share));
-    return `<div class="member"><span>${esc(m.display_name)} <small>${m.role}</small>${m.person_id ? `<small class="kin-account">In the tree as ${name(m.person_id)}</small>` : m.claim_person_id ? `<small class="kin-account">Asked to be linked to ${name(m.claim_person_id)}</small>` : ""}${about ? `<details><summary>About ${esc(m.display_name)}</summary>${about.about ? `<p class="post-body">${esc(about.about)}</p>` : ""}${about.work ? `<p><strong>Work:</strong> ${esc(about.work)}</p>` : ""}${about.share ? `<p><strong>For the family:</strong> ${esc(about.share)}</p>` : ""}</details>` : ""}</span><span class="tree-actions">${isOwner && m.person_id && m.user_id !== me ? `<button class="quiet" data-unlink="${m.user_id}" aria-label="Remove the tree link for ${esc(m.display_name)}">Remove link</button>` : ""}${isOwner && m.role !== "owner" ? `<button class="quiet" data-remove="${m.user_id}" aria-label="Remove access for ${esc(m.display_name)}">Remove access</button>` : ""}</span></div>`;
+    return `<div class="member">${avatar(snapshot.people.find((p) => p.id === m.person_id) || { name: m.display_name }, snapshot.photos, "tree-avatar small")}<span>${esc(m.display_name)} <small>${m.role}</small>${m.person_id ? `<small class="kin-account">In the tree as ${name(m.person_id)}</small>` : m.claim_person_id ? `<small class="kin-account">Asked to be linked to ${name(m.claim_person_id)}</small>` : ""}${about ? `<details><summary>About ${esc(m.display_name)}</summary>${about.about ? `<p class="post-body">${esc(about.about)}</p>` : ""}${about.work ? `<p><strong>Work:</strong> ${esc(about.work)}</p>` : ""}${about.share ? `<p><strong>For the family:</strong> ${esc(about.share)}</p>` : ""}</details>` : ""}</span><span class="tree-actions">${isOwner && m.person_id && m.user_id !== me ? `<button class="quiet" data-unlink="${m.user_id}" aria-label="Remove the tree link for ${esc(m.display_name)}">Remove link</button>` : ""}${isOwner && m.role !== "owner" ? `<button class="quiet" data-remove="${m.user_id}" aria-label="Remove access for ${esc(m.display_name)}">Remove access</button>` : ""}</span></div>`;
   }).join("");
   return `<section class="card"><h2>Your people</h2>${roster}</section><form id="profile" class="card stack"><h2>Your life profile</h2><p>What you want this family to know about you. Only members of this family can see it, and only you can change it.</p><label>About you<textarea name="about" maxlength="1000">${esc(profile.about)}</textarea></label><label>Work<input name="work" maxlength="300" value="${esc(profile.work)}"></label><label>Anything else for the family<textarea name="share" maxlength="1000" placeholder="Interests, news, how best to reach you…">${esc(profile.share)}</textarea></label><button>Save profile</button></form><section class="card stack"><h2>Invite a relative</h2><form id="invite-form" class="stack"><p>Say who you are inviting and where they are in the family tree. The invitation works only for their email address, and joining links their account to that place in the tree.</p><label>Their email address<input name="email" type="email" required maxlength="254" autocomplete="off"></label><label>Who are they in the family tree?<select name="person" ${isOwner ? "" : "required"}>${isOwner ? '<option value="">Not in the tree yet — they can find themselves later</option>' : '<option value="">Choose a person</option>'}${open.map((p) => { const relation = relationTo(snapshot.people, myPerson(), p.id); return `<option value="${p.id}">${esc(p.name)}${relation && relation !== "you" ? ` — your ${esc(relation)}` : ""}</option>`; }).join("")}</select></label><small>Not listed? Add them in Family tree first, then invite them. People who have died, and people already linked to an account, are not listed.</small><button>Create invitation</button></form><div id="invite-code">${sent ? `<p><strong>Invitation ready for ${esc(inviteResult.email)}${sent.name ? ` as ${esc(sent.name)}` : ""}.</strong> Roots does not send invitations itself: open it in your email app, or copy the link.</p><a class="light-button" href="${esc(sent.mailto)}">Open in your email app</a><label>Invitation link<input readonly value="${esc(sent.link)}"></label><small>Shown once. Anyone else who gets this link cannot use it: it works only for ${esc(inviteResult.email)}.</small>` : ""}</div><h3>${isOwner ? "Invitations" : "Invitations you sent"}</h3>${snapshot.invitations.map((i) => `<div class="member"><small>${status(i)} · ${esc(i.email || "Code without an address")}${i.person_id ? ` · as ${name(i.person_id)}` : ""}${isOwner && i.invited_by && i.invited_by !== me ? ` · sent by ${esc(snapshot.memberships.find((m) => m.user_id === i.invited_by)?.display_name || "a former member")}` : ""} · expires ${esc(new Date(i.expires_at).toLocaleDateString())}</small>${!i.used_at && !i.revoked_at ? `<button class="quiet" data-revoke="${i.id}" aria-label="Revoke invitation for ${esc(i.email || "code")}">Revoke</button>` : ""}</div>`).join("") || "<p>No invitations yet.</p>"}</section><details ${pendingInvite() ? "open" : ""}><summary>Create or join another family</summary>${onboarding()}</details>`;
 }
@@ -503,6 +524,7 @@ document.addEventListener("click", (event) => {
     !button.dataset.remove &&
     !button.dataset.withdraw &&
     !button.dataset.revoke &&
+    !button.dataset.removePhoto &&
     !treeAction
   )
     return;
@@ -530,6 +552,12 @@ document.addEventListener("click", (event) => {
       postLimit += 20;
       await loadFamily();
       say("");
+    } else if (button.dataset.removePhoto) {
+      if (!confirm("Remove this photo? It will be deleted for everyone in the family.")) return say("No changes made.");
+      const old = await result(supabase.rpc("set_person_photo", { fid: familyId, person: button.dataset.removePhoto, path: null }));
+      if (old) await supabase.storage.from(PHOTOS).remove([old]);
+      await loadFamily();
+      report("Photo removed.");
     } else if (treeAction) {
       const name = (id) => snapshot.people.find((p) => p.id === id)?.name || "this person";
       if (treeAction === "unlink" && !confirm("Remove this link between an account and the family tree?")) return say("No changes made.");
@@ -574,6 +602,28 @@ document.addEventListener("input", (event) => {
   const text = event.target.value.trim().toLowerCase();
   for (const label of root.querySelectorAll(".kin-list .check")) label.hidden = Boolean(text) && !label.textContent.toLowerCase().includes(text) && !label.querySelector("input").checked;
 });
+// A new photo: prepared on this device, uploaded to the family's private folder, then set on the
+// person (the database checks who may). The replaced file is deleted; a refused upload is cleaned up.
+function uploadPhoto(input) {
+  const person = input.dataset.photo, file = input.files?.[0];
+  input.value = "";
+  if (!file) return;
+  run(async () => {
+    const photo = await squarePhoto(file);
+    const path = `${familyId}/${person}/${crypto.randomUUID()}.jpg`;
+    await result(supabase.storage.from(PHOTOS).upload(path, photo, { contentType: "image/jpeg", upsert: false }));
+    let old;
+    try {
+      old = await result(supabase.rpc("set_person_photo", { fid: familyId, person, path }));
+    } catch (error) {
+      await supabase.storage.from(PHOTOS).remove([path]);
+      throw error;
+    }
+    if (old) await supabase.storage.from(PHOTOS).remove([old]);
+    await loadFamily();
+    report("Photo saved. Everyone in the family can now see it.");
+  });
+}
 // Enter in the tree search selects the first matching person.
 document.addEventListener("keydown", (event) => {
   if (event.target.id !== "tree-search" || event.key !== "Enter") return;
@@ -582,6 +632,7 @@ document.addEventListener("keydown", (event) => {
   if (first) { treeSelected = first.dataset.select; render(); root.querySelector("#tree-panel")?.scrollIntoView({ block: "nearest" }); }
 });
 document.addEventListener("change", (event) => {
+  if (event.target.dataset?.photo) return uploadPhoto(event.target);
   if (event.target.closest?.("#person")) updateApproval(event.target.closest("#person"));
   if(event.target.id === 'tree-branch') { treeBranch=event.target.value;render();return; }
   if (event.target.id === "family-select")

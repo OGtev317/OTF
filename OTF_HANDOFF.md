@@ -5,6 +5,15 @@
 OTF means Only the Family. Build an app for families to connect, socialize, stay in touch, and record their family tree. Begin with the founder's family and eventually support separate family spaces for others.
 
 
+
+## Person photos (2026-10-18)
+
+- **Storage:** private bucket `family-photos` (JPEG only, 512 KB limit), files at `<family id>/<person id>/<random id>.jpg`. Policies on `storage.objects`: family members read; upload only where `private.may_set_photo` allows; delete where `private.may_remove_photo` allows. The page shows photos through signed links that expire after an hour and are renewed after 50 minutes. CSP `img-src` allows only `https://fmfsctqtnpjjfxmumolk.supabase.co`.
+- **Who may set a photo:** whoever may edit the record directly (memorials: their keepers; someone with an account: only them; others: owners). A living child under 18 by recorded birth date, without their own account, takes a photo only from a parent or guardian linked in the tree; owners are not exempt. Owners may always remove a photo. No photo proposals yet.
+- **Database** `20261023010000_person_photos.sql` (additive): `people.photo_path`, `photo_updated_at` (a photo does not change the record version), the bucket, the three policies, and `set_person_photo(fid, person, path|null)`, which checks permission, that the file is in that person's folder and already uploaded, and returns the previous path so the app deletes it. A refused set deletes the just-uploaded file.
+- **App:** `photo.js` centre-crops to a square of at most 512 px and re-encodes as JPEG on the device (which drops location and other hidden details). Round photos or initials on tree cards, the phone focus view and the Members list; a larger photo with Add/Change/Remove in the person panel. `kinship.js` `mayPhoto` mirrors the rule; the demo keeps uploaded photos in the browser.
+- Validation: syntax checks; 17 browser test files (new `tests/photos.test.js`) with a clean exit; all five PostgreSQL suites (new `supabase/tests/photos.sql`); build; end-to-end against a local Supabase with the real storage service in Chromium and WebKit (parent uploads, replaces, a relative sees the photo but is offered no upload for the child, a direct upload into the child's folder is refused with HTTP 400, the relative sets their own photo, the owner removes it, no files left behind).
+
 ## Connected family tree (2026-10-18)
 
 The Family tree tab is now a connected tree instead of a list of cards.

@@ -129,3 +129,18 @@ export function descendantsOf(people, id) {
   }
   return out;
 }
+
+/** Under 18 today, by a recorded birth date (unknown birth dates are not treated as children). */
+export function isMinor(born) {
+  if (!born) return false;
+  const d = new Date(), [y, m, day] = born.split("-").map(Number);
+  return d.getFullYear() - y - (d.getMonth() + 1 < m || (d.getMonth() + 1 === m && d.getDate() < day) ? 1 : 0) < 18;
+}
+
+/** Mirror of private.may_set_photo: a child's photo comes from a parent or guardian linked in the tree. */
+export function mayPhoto(snap, userId, isOwner, person) {
+  const me = snap.memberships.find((m) => m.user_id === userId)?.person_id || "";
+  const claimed = snap.memberships.some((m) => m.person_id === person.id);
+  if (person.life_status !== "deceased" && isMinor(person.birth_date) && !claimed) return Boolean(me) && ids(person.parents).includes(me);
+  return mayApply(snap, userId, isOwner, person.id, person, person);
+}

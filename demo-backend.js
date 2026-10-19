@@ -1,7 +1,7 @@
 // The fictional demo runs the real family app (pilot.js) against this in-browser stand-in for
 // Supabase, so the demo always looks and behaves like the signed-in app. Records are fictional
 // and stay in this browser. The rules mirror the database: kinship.js decides who may change what.
-import { mayAdd, mayApply } from "./kinship.js";
+import { mayAdd, mayApply, mayPhoto } from "./kinship.js";
 
 const KEY = "roots-demo-v1", ME = "demo-you", FAMILY = "demo-bennetts";
 const PARENT_KINDS = ["biological", "adoptive", "step", "guardian", "unspecified"];
@@ -66,6 +66,8 @@ function seed() {
       { family_id: FAMILY, user_id: "demo-maya", about: "Teacher, gardener, and the family’s official dinner host.", work: "Third-grade teacher", share: "Text me before you visit so I can save you a plate.", updated_at: hoursAgo(48) },
       { family_id: FAMILY, user_id: "demo-leo", about: "Happiest on a long drive with good music.", work: "Bus driver", share: "", updated_at: hoursAgo(72) },
     ],
+    // Uploaded photos, by storage path, as data URLs kept in this browser.
+    photos: {},
     invitations: [
       { id: "invite-sam", family_id: FAMILY, code: "", email: "sam@example.com", person_id: "sam", invited_by: ME, expires_at: new Date(Date.now() + 5 * 864e5).toISOString(), used_at: null, revoked_at: null },
     ],
@@ -76,7 +78,7 @@ let db = load();
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved?.version === 1) return saved;
+    if (saved?.version === 1) return { photos: {}, ...saved };
   } catch {}
   return seed();
 }
@@ -322,6 +324,16 @@ const rpcs = {
     return id;
   },
   accept_invitation: () => fail("Invitations work on the real Roots site, not in this demo."),
+  set_person_photo: ({ fid, person, path = null }) => {
+    need(fid);
+    const p = db.people.find((x) => x.id === person && x.family_id === fid) || fail("Person unavailable");
+    const may = mayPhoto(rules(fid), ME, owner(fid), p);
+    if (path === null ? !(may || owner(fid)) : !may) fail(path === null ? "You cannot remove this photo" : "Only someone who can edit this record directly can set its photo. A child’s photo comes from a parent or guardian in the tree.");
+    if (path !== null && (!path.startsWith(`${fid}/${person}/`) || !db.photos[path])) fail("Upload the photo first");
+    const old = p.photo_path || null;
+    p.photo_path = path;
+    return old;
+  },
 };
 
 const session = { user: { id: ME, email: "you@example.invalid" } };
@@ -335,6 +347,20 @@ export const backend = {
     signInWithPassword: notInDemo, signUp: notInDemo, resetPasswordForEmail: notInDemo, updateUser: notInDemo, verifyOtp: notInDemo,
   },
   from: (table) => query(table),
+  // Photos stay in this browser as data URLs; "signed links" are the data URLs themselves.
+  storage: {
+    from: () => ({
+      upload: async (path, blob) => {
+        const url = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsDataURL(blob); });
+        if (JSON.stringify(db).length + url.length > 4_500_000) return { data: null, error: { message: "This demo cannot keep more photos in your browser. Use “Start over” to clear it." } };
+        db.photos[path] = url;
+        save();
+        return { data: { path }, error: null };
+      },
+      remove: async (paths) => { for (const path of paths) delete db.photos[path]; save(); return { data: paths, error: null }; },
+      createSignedUrls: async (paths) => ({ data: paths.map((path) => ({ path, signedUrl: db.photos[path] || null, error: null })), error: null }),
+    }),
+  },
   rpc: async (name, args = {}) => {
     try {
       const data = (rpcs[name] || (() => fail("Unknown request")))(args);

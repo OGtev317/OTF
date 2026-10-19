@@ -19,6 +19,7 @@ fixture.rows = {
 };
 api.from.mockImplementation((table) => query(() => fixture.rows[table] || []));
 test('loads every relative across pages and shows older posts on request', async () => {
+  Element.prototype.scrollIntoView = vi.fn();
   document.body.innerHTML = '<div id="account"></div><main id="pilot"></main><p id="status"></p>';
   await import('../pilot.js');
   await vi.waitFor(() => expect(document.querySelectorAll('.post-body').length).toBe(20));
