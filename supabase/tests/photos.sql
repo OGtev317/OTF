@@ -10,8 +10,11 @@ create function public.save(payload jsonb) returns uuid language sql as $$ selec
 -- A path in the photo folder of `person`, and an "upload" of it (an insert checked by the storage policies).
 create function public.photo_path(person text) returns text language sql as $$ select public.v('fam')||'/'||public.v(person)||'/'||gen_random_uuid()||'.jpg'; $$;
 create function public.upload(path text) returns void language sql as $$ insert into storage.objects(bucket_id,name) values('family-photos',path); $$;
+-- The app deletes files through the Storage API; hosted Supabase refuses direct SQL deletes from
+-- its storage tables, so a test delete there is skipped (the file stays until the rollback).
+create function public.drop_file(path text) returns void language plpgsql as $$ begin delete from storage.objects where name=path; exception when insufficient_privilege then null; end; $$;
 create function public.photo_of(person text) returns text language sql stable as $$ select photo_path from public.people where id=public.v(person); $$;
-grant execute on function public.test_assert(boolean,text),public.test_denied(text),public.test_as(text),public.v(text),public.keep(text,uuid),public.save(jsonb),public.photo_path(text),public.upload(text),public.photo_of(text) to anon,authenticated;
+grant execute on function public.test_assert(boolean,text),public.test_denied(text),public.test_as(text),public.v(text),public.keep(text,uuid),public.save(jsonb),public.photo_path(text),public.upload(text),public.drop_file(text),public.photo_of(text) to anon,authenticated;
 set local role authenticated;
 
 select public.test_as('41');
@@ -62,11 +65,11 @@ select public.test_assert(public.test_denied(format('select public.upload(%L)',p
 select set_config('test.momPhoto2',public.photo_path('mom'),true);
 select public.upload(current_setting('test.momPhoto2'));
 select public.test_assert(public.set_person_photo(public.v('fam'),public.v('mom'),current_setting('test.momPhoto2'))=current_setting('test.momPhoto'),'replacing returns the previous photo to delete');
-delete from storage.objects where name=current_setting('test.momPhoto');
+select public.drop_file(current_setting('test.momPhoto'));
 
 -- Family members see the family's photos; nobody else does.
 select public.test_as('43');
-select public.test_assert((select count(*)=4 from storage.objects where bucket_id='family-photos'),'family members read the family''s photos');
+select public.test_assert((select count(*)=4 from storage.objects where bucket_id='family-photos' and name in (current_setting('test.unclePhoto'),current_setting('test.granPhoto'),current_setting('test.kidPhoto'),current_setting('test.momPhoto2'))),'family members read the family''s photos');
 select public.test_assert(public.test_denied(format('select public.set_person_photo(%L,%L,null)',public.v('fam'),public.v('uncle'))),'member cannot remove a photo they could not set');
 select public.test_assert(public.test_denied(format('delete from storage.objects where name=%L returning 1',current_setting('test.unclePhoto'))) or (select count(*)=1 from storage.objects where name=current_setting('test.unclePhoto')),'member cannot delete the file');
 select public.test_as('44');
@@ -78,8 +81,8 @@ select public.test_assert(public.test_denied(format('select public.set_person_ph
 -- Owners can always remove a photo, even one they could not set.
 select public.test_as('41');
 select public.test_assert(public.set_person_photo(public.v('fam'),public.v('mom'),null)=current_setting('test.momPhoto2'),'owner removes a photo and gets its path');
-delete from storage.objects where name=current_setting('test.momPhoto2');
-select public.test_assert(public.photo_of('mom') is null and (select count(*)=0 from storage.objects where name=current_setting('test.momPhoto2')),'photo and file removed');
+select public.test_assert(public.photo_of('mom') is null and private.may_remove_photo(public.v('fam'),public.v('mom')),'photo cleared and its file may be deleted by the owner');
+select public.drop_file(current_setting('test.momPhoto2'));
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);
 select public.test_assert((select count(*)=0 from storage.objects),'anonymous sees no photos');
