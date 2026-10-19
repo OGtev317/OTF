@@ -3,6 +3,7 @@ const signOutButton = `<button class="quiet" id="logout">${demo ? "Leave demo" :
 import { decorateWelcome, decorateMember } from "./memory-scene.js";
 import { treeView, approvalNote, avatar } from "./tree-view.js";
 import { squarePhoto } from "./photo.js";
+import { suggestMatches } from "./matching.js";
 import { drawTreeLines } from "./tree-layout.js";
 import { relationTo } from "./kinship.js";
 import { familyFeed } from "./family-feed.js";
@@ -43,13 +44,22 @@ function pendingInvite() {
 function keepInvite(code) {
   try { code ? localStorage.setItem(INVITE_KEY, code) : localStorage.removeItem(INVITE_KEY); } catch {}
 }
-{
-  const code = new URLSearchParams(location.search).get("invite");
-  if (code) {
-    if (/^[0-9a-f]{64}$/i.test(code)) keepInvite(code.toLowerCase());
-    history.replaceState(null, "", location.pathname);
-  }
+// A family's join link (?join=…) is kept the same way, so a newcomer can ask to join after signing up.
+const JOIN_KEY = "otf-join";
+function pendingJoin() {
+  try { return localStorage.getItem(JOIN_KEY) || ""; } catch { return ""; }
 }
+function keepJoin(code) {
+  try { code ? localStorage.setItem(JOIN_KEY, code) : localStorage.removeItem(JOIN_KEY); } catch {}
+}
+{
+  const params = new URLSearchParams(location.search), code = params.get("invite"), join = params.get("join");
+  if (code && /^[0-9a-f]{64}$/i.test(code)) keepInvite(code.toLowerCase());
+  if (join && /^[0-9a-f]{64}$/i.test(join)) keepJoin(join.toLowerCase());
+  if (code || join) history.replaceState(null, "", location.pathname);
+}
+// The signed-in person's requests to join, and what their pending join link shows (family name only).
+let myRequests = [], joinPreview = null;
 // The status floats over the page, so confirmations fade after a few seconds;
 // errors and anything the person must act on stay until the next message.
 let fade;
@@ -75,7 +85,7 @@ function authScreen() {
   const signup = mode === "signup",
     recovery = mode === "recover",
     reset = mode === "reset";
-  root.innerHTML = `<div class="auth-grid"><section class="welcome"><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>A little closer.<br>A little more together.</h1><p>Catch up on the everyday.<br>Keep the stories that matter.</p><div class="hero"><div><h2>Different branches.<br>Same roots.</h2><p>Your family space starts with an invitation.</p></div></div><a href="/demo.html">Take a look around the fictional demo →</a></section><form id="auth-form" class="card stack">${pendingInvite() && !reset ? '<p class="kin-note">You have an invitation. Sign in, or create an account, with the email address it was sent to.</p>' : ""}<h2>${signup ? "Create your account" : recovery ? "Find your way back" : reset ? "Choose a new password" : "Welcome back"}</h2><p>${signup ? "An account does not grant family access. Join with an invitation or create your own space." : recovery ? "We’ll send a password-reset link if this email has an account." : reset ? "Use a new password with at least 12 characters." : "Sign in to your family’s space."}</p>${!reset ? field("Email", "email", "email", 'autocomplete="email" maxlength="254"') : ""}${!recovery ? field("Password", "password", "password", `minlength="12" maxlength="128" autocomplete="${signup || reset ? "new-password" : "current-password"}"`) : ""}<button>${signup ? "Create account" : recovery ? "Send reset link" : reset ? "Save new password" : "Sign in"}</button>${!reset ? `<button class="quiet" type="button" data-mode="${signup || recovery ? "signin" : "signup"}">${signup || recovery ? "Back to sign in" : "New here? Create an account"}</button>${!signup && !recovery ? '<button class="quiet" type="button" data-mode="recover">Forgot your password?</button>' : ""}` : ""}</form></div>`;
+  root.innerHTML = `<div class="auth-grid"><section class="welcome"><span class="eyebrow">YOUR PEOPLE. YOUR PLACE.</span><h1>A little closer.<br>A little more together.</h1><p>Catch up on the everyday.<br>Keep the stories that matter.</p><div class="hero"><div><h2>Different branches.<br>Same roots.</h2><p>Your family space starts with an invitation.</p></div></div><a href="/demo.html">Take a look around the fictional demo →</a></section><form id="auth-form" class="card stack">${pendingInvite() && !reset ? '<p class="kin-note">You have an invitation. Sign in, or create an account, with the email address it was sent to.</p>' : pendingJoin() && !reset ? '<p class="kin-note">You opened a family’s join link. Sign in, or create an account, to ask to join.</p>' : ""}<h2>${signup ? "Create your account" : recovery ? "Find your way back" : reset ? "Choose a new password" : "Welcome back"}</h2><p>${signup ? "An account does not grant family access. Join with an invitation or create your own space." : recovery ? "We’ll send a password-reset link if this email has an account." : reset ? "Use a new password with at least 12 characters." : "Sign in to your family’s space."}</p>${!reset ? field("Email", "email", "email", 'autocomplete="email" maxlength="254"') : ""}${!recovery ? field("Password", "password", "password", `minlength="12" maxlength="128" autocomplete="${signup || reset ? "new-password" : "current-password"}"`) : ""}<button>${signup ? "Create account" : recovery ? "Send reset link" : reset ? "Save new password" : "Sign in"}</button>${!reset ? `<button class="quiet" type="button" data-mode="${signup || recovery ? "signin" : "signup"}">${signup || recovery ? "Back to sign in" : "New here? Create an account"}</button>${!signup && !recovery ? '<button class="quiet" type="button" data-mode="recover">Forgot your password?</button>' : ""}` : ""}</form></div>`;
   decorateWelcome(root);
 }
 async function refreshFamilies() {
@@ -83,6 +93,15 @@ async function refreshFamilies() {
   families = await result(
     supabase.from("families").select("id,name").order("created_at"),
   );
+  myRequests = (await result(supabase.from("join_requests").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(20))) || [];
+  joinPreview = null;
+  const join = pendingJoin();
+  if (join) {
+    const { data, error } = await supabase.rpc("preview_join_link", { code: join });
+    joinPreview = error ? { error: error.message } : data?.[0] || { error: "This join link has expired or been turned off. Ask the family for a new one." };
+    // Already a member: go straight to that family.
+    if (joinPreview.member) { keepJoin(""); familyId = joinPreview.family_id; joinPreview = null; }
+  }
   if (!families.some((f) => f.id === familyId)) {
     if (current) removedFrom = current.name;
     familyId = families[0]?.id || "";
@@ -172,8 +191,14 @@ async function loadFamily() {
   }
   // Owners see every invitation; members see the ones they sent.
   const invitations = await result(supabase.rpc("list_invitations", { fid }));
+  // Owners also see the join link and requests to join.
+  const [joinLink, joinRequests] = owner()
+    ? await Promise.all([result(supabase.rpc("join_link", { fid })), every(() => supabase.from("join_requests").select("*").eq("family_id", fid).eq("status", "pending").order("created_at").order("id"))])
+    : [[], []];
   if (request !== loadId || !session || fid !== familyId) return;
   snapshot.invitations = invitations || [];
+  snapshot.joinLink = joinLink?.[0] || null;
+  snapshot.joinRequests = joinRequests;
   render();
 }
 function owner() {
@@ -182,9 +207,20 @@ function owner() {
   );
 }
 const myPerson = () => snapshot?.memberships.find((m) => m.user_id === session?.user.id)?.person_id || "";
+function joinCard() {
+  if (!joinPreview) return "";
+  if (joinPreview.error) return `<section class="card stack" id="join-request-box"><h2>Join link</h2><p>${esc(joinPreview.error)}</p><button class="quiet" id="join-dismiss">Dismiss</button></section>`;
+  if (joinPreview.pending) return `<section class="card stack" id="join-request-box"><h2>Your request to join ${esc(joinPreview.family_name)} is waiting</h2><p>An owner of the family will review it. You will see the family here once they approve it.</p><button class="quiet" id="refresh-requests">Check again</button></section>`;
+  return `<form id="join-request" class="card stack"><h2>Ask to join ${esc(joinPreview.family_name)}</h2><p>An owner of this family will review your request. Nobody can see you or your note except the family’s owners, and you will see the family only once they approve it.</p>${field("Your name in this family", "display_name", "text", 'maxlength="100" autocomplete="name"')}<label>A note for the family (optional)<textarea name="note" maxlength="500" placeholder="For example: I’m Maya’s daughter Jordan."></textarea></label><label>Your birth year (optional)<input name="birth_year" type="number" inputmode="numeric" min="1900" max="${new Date().getFullYear()}"></label><small>A name and birth year help the owner find your place in the family tree.</small><div class="tree-actions"><button>Send request</button><button type="button" class="quiet" id="join-dismiss">Not now</button></div></form>`;
+}
+function requestsList() {
+  const shown = myRequests.filter((r) => r.status !== "approved" && r.status !== "withdrawn");
+  if (!shown.length) return "";
+  return `<section class="card"><h2>Your requests to join</h2>${shown.map((r) => `<div class="member"><span>${esc(r.family_name || "A family")} <small>${r.status === "pending" ? "Waiting for an owner" : "Declined"} · ${esc(new Date(r.created_at).toLocaleDateString())}</small></span>${r.status === "pending" ? `<span class="tree-actions"><button class="quiet" id="refresh-requests">Check again</button><button class="quiet" data-withdraw-request="${r.id}" aria-label="Withdraw request to join ${esc(r.family_name)}">Withdraw</button></span>` : ""}</div>`).join("")}</section>`;
+}
 function onboarding() {
   const invite = pendingInvite();
-  return `${invite ? '<p class="card kin-note">You have an invitation. Join below with the email address it was sent to.</p>' : ""}<div class="columns"><form id="create-family" class="card stack"><h2>Start your family space</h2><p>An empty home for your own family. You’ll be its first owner.</p>${field("Family name", "family_name", "text", 'maxlength="100"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Create family</button></form><form id="join-family" class="card stack"><h2>Invited by a relative?</h2><p>Open the link from your invitation email, or paste its code. It works once, only for the email address it was sent to, and expires after seven days.</p>${field("Invitation code", "code", "text", `autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200" value="${esc(invite)}"`)}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Join family</button></form></div>`;
+  return `${joinCard()}${requestsList()}${invite ? '<p class="card kin-note">You have an invitation. Join below with the email address it was sent to.</p>' : ""}<div class="columns"><form id="create-family" class="card stack"><h2>Start your family space</h2><p>An empty home for your own family. You’ll be its first owner.</p>${field("Family name", "family_name", "text", 'maxlength="100"')}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Create family</button></form><form id="join-family" class="card stack"><h2>Invited by a relative?</h2><p>Open the link from your invitation email, or paste its code. It works once, only for the email address it was sent to, and expires after seven days.</p>${field("Invitation code", "code", "text", `autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200" value="${esc(invite)}"`)}${field("Your name in this family", "member_name", "text", 'maxlength="100"')}<button>Join family</button></form></div>`;
 }
 function feed() {
   return familyFeed(snapshot, session.user.id, morePosts);
@@ -205,6 +241,18 @@ function invitationMessage({ code, email, person }) {
   const body = `Hi${name ? ` ${name.split(" ")[0]}` : ""},\n\nI’d like you to join ${family} on Roots, our private family space${name ? `, where you are in our family tree as ${name}${relation && relation !== "you" ? ` — my ${relation}` : ""}` : ""}.\n\nJoin with this link:\n${link}\n\nIt works only when you sign up or sign in with ${email}, and it expires in seven days.\n\n${me}`;
   return { link, name, relation, mailto: `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(`Join ${family} on Roots`)}&body=${encodeURIComponent(body)}` };
 }
+// Owners: the family's join link, and requests to join with "Is this you?" suggestions.
+function joinSection() {
+  const link = snapshot.joinLink, requests = snapshot.joinRequests || [];
+  const open = snapshot.people.filter((p) => p.life_status !== "deceased" && !snapshot.memberships.some((m) => m.person_id === p.id)).sort((a, b) => a.name.localeCompare(b.name));
+  const years = (p) => (p.birth_date ? ` · born ${p.birth_date.slice(0, 4)}` : "");
+  const decision = (r) => {
+    const found = suggestMatches(r, snapshot.people, snapshot.memberships);
+    const choice = (value, label, checked) => `<label class="check"><input type="radio" name="place" value="${value}" ${checked ? "checked" : ""}>${label}</label>`;
+    return `<form class="card stack join-decision" data-join-request="${r.id}"><h3>${esc(r.display_name)}</h3><small>Asked ${esc(new Date(r.created_at).toLocaleDateString())}${r.birth_year ? ` · born ${r.birth_year}` : ""}</small>${r.note ? `<p class="post-body">${esc(r.note)}</p>` : ""}<fieldset class="kin-list"><legend>Who are they in the tree?</legend>${found.length ? '<small>Possible matches, best first. Only you decide.</small>' : '<small>No likely match in the tree.</small>'}${found.map((m, i) => choice(`person:${m.person.id}`, `Is this them? <strong>${esc(m.person.name)}</strong>${esc(years(m.person))}`, i === 0)).join("")}${choice("new", `Add them as someone new: ${esc(r.display_name)}`, !found.length)}${open.length ? `<label class="check"><input type="radio" name="place" value="other">Someone else in the tree<select name="other" aria-label="Choose who they are">${open.map((p) => `<option value="${p.id}">${esc(p.name)}${esc(years(p))}</option>`).join("")}</select></label>` : ""}${choice("none", "Not in the tree for now", false)}</fieldset><div class="tree-actions"><button name="decision" value="approve">Approve</button><button class="quiet" name="decision" value="decline">Decline</button></div></form>`;
+  };
+  return `<section class="card stack" id="join-section"><h2>Join link</h2><p>Share this link where your family already talks, such as a group chat. Anyone who opens it and signs in sees only your family’s name and can ask to join. Nobody gets in until an owner approves.</p>${link ? `<label>Join link<input readonly value="${esc(`${location.origin}/?join=${link.code}`)}"></label><small>Works until ${esc(new Date(link.expires_at).toLocaleDateString())}.</small><div class="tree-actions"><button class="quiet" id="join-link-new">Replace link</button><button class="quiet" id="join-link-off">Turn off</button></div>` : '<button id="join-link-new">Create join link</button>'}${requests.length ? "" : '<p class="kin-note">No requests to join waiting.</p>'}</section>${requests.length ? `<section class="stack" id="join-requests"><h2>Requests to join (${requests.length})</h2>${requests.map(decision).join("")}</section>` : ""}`;
+}
 function members() {
   const me = session.user.id, isOwner = owner();
   const name = (id) => esc(snapshot.people.find((p) => p.id === id)?.name || "someone no longer in the tree");
@@ -216,7 +264,7 @@ function members() {
     const about = snapshot.life_profiles.find((p) => p.user_id === m.user_id && (p.about || p.work || p.share));
     return `<div class="member">${avatar(snapshot.people.find((p) => p.id === m.person_id) || { name: m.display_name }, snapshot.photos, "tree-avatar small")}<span>${esc(m.display_name)} <small>${m.role}</small>${m.person_id ? `<small class="kin-account">In the tree as ${name(m.person_id)}</small>` : m.claim_person_id ? `<small class="kin-account">Asked to be linked to ${name(m.claim_person_id)}</small>` : ""}${about ? `<details><summary>About ${esc(m.display_name)}</summary>${about.about ? `<p class="post-body">${esc(about.about)}</p>` : ""}${about.work ? `<p><strong>Work:</strong> ${esc(about.work)}</p>` : ""}${about.share ? `<p><strong>For the family:</strong> ${esc(about.share)}</p>` : ""}</details>` : ""}</span><span class="tree-actions">${isOwner && m.person_id && m.user_id !== me ? `<button class="quiet" data-unlink="${m.user_id}" aria-label="Remove the tree link for ${esc(m.display_name)}">Remove link</button>` : ""}${isOwner && m.role !== "owner" ? `<button class="quiet" data-remove="${m.user_id}" aria-label="Remove access for ${esc(m.display_name)}">Remove access</button>` : ""}</span></div>`;
   }).join("");
-  return `<section class="card"><h2>Your people</h2>${roster}</section><form id="profile" class="card stack"><h2>Your life profile</h2><p>What you want this family to know about you. Only members of this family can see it, and only you can change it.</p><label>About you<textarea name="about" maxlength="1000">${esc(profile.about)}</textarea></label><label>Work<input name="work" maxlength="300" value="${esc(profile.work)}"></label><label>Anything else for the family<textarea name="share" maxlength="1000" placeholder="Interests, news, how best to reach you…">${esc(profile.share)}</textarea></label><button>Save profile</button></form><section class="card stack"><h2>Invite a relative</h2><form id="invite-form" class="stack"><p>Say who you are inviting and where they are in the family tree. The invitation works only for their email address, and joining links their account to that place in the tree.</p><label>Their email address<input name="email" type="email" required maxlength="254" autocomplete="off"></label><label>Who are they in the family tree?<select name="person" ${isOwner ? "" : "required"}>${isOwner ? '<option value="">Not in the tree yet — they can find themselves later</option>' : '<option value="">Choose a person</option>'}${open.map((p) => { const relation = relationTo(snapshot.people, myPerson(), p.id); return `<option value="${p.id}">${esc(p.name)}${relation && relation !== "you" ? ` — your ${esc(relation)}` : ""}</option>`; }).join("")}</select></label><small>Not listed? Add them in Family tree first, then invite them. People who have died, and people already linked to an account, are not listed.</small><button>Create invitation</button></form><div id="invite-code">${sent ? `<p><strong>Invitation ready for ${esc(inviteResult.email)}${sent.name ? ` as ${esc(sent.name)}` : ""}.</strong> Roots does not send invitations itself: open it in your email app, or copy the link.</p><a class="light-button" href="${esc(sent.mailto)}">Open in your email app</a><label>Invitation link<input readonly value="${esc(sent.link)}"></label><small>Shown once. Anyone else who gets this link cannot use it: it works only for ${esc(inviteResult.email)}.</small>` : ""}</div><h3>${isOwner ? "Invitations" : "Invitations you sent"}</h3>${snapshot.invitations.map((i) => `<div class="member"><small>${status(i)} · ${esc(i.email || "Code without an address")}${i.person_id ? ` · as ${name(i.person_id)}` : ""}${isOwner && i.invited_by && i.invited_by !== me ? ` · sent by ${esc(snapshot.memberships.find((m) => m.user_id === i.invited_by)?.display_name || "a former member")}` : ""} · expires ${esc(new Date(i.expires_at).toLocaleDateString())}</small>${!i.used_at && !i.revoked_at ? `<button class="quiet" data-revoke="${i.id}" aria-label="Revoke invitation for ${esc(i.email || "code")}">Revoke</button>` : ""}</div>`).join("") || "<p>No invitations yet.</p>"}</section><details ${pendingInvite() ? "open" : ""}><summary>Create or join another family</summary>${onboarding()}</details>`;
+  return `<section class="card"><h2>Your people</h2>${roster}</section>${isOwner ? joinSection() : ""}<form id="profile" class="card stack"><h2>Your life profile</h2><p>What you want this family to know about you. Only members of this family can see it, and only you can change it.</p><label>About you<textarea name="about" maxlength="1000">${esc(profile.about)}</textarea></label><label>Work<input name="work" maxlength="300" value="${esc(profile.work)}"></label><label>Anything else for the family<textarea name="share" maxlength="1000" placeholder="Interests, news, how best to reach you…">${esc(profile.share)}</textarea></label><button>Save profile</button></form><section class="card stack"><h2>Invite a relative</h2><form id="invite-form" class="stack"><p>Say who you are inviting and where they are in the family tree. The invitation works only for their email address, and joining links their account to that place in the tree.</p><label>Their email address<input name="email" type="email" required maxlength="254" autocomplete="off"></label><label>Who are they in the family tree?<select name="person" ${isOwner ? "" : "required"}>${isOwner ? '<option value="">Not in the tree yet — they can find themselves later</option>' : '<option value="">Choose a person</option>'}${open.map((p) => { const relation = relationTo(snapshot.people, myPerson(), p.id); return `<option value="${p.id}">${esc(p.name)}${relation && relation !== "you" ? ` — your ${esc(relation)}` : ""}</option>`; }).join("")}</select></label><small>Not listed? Add them in Family tree first, then invite them. People who have died, and people already linked to an account, are not listed.</small><button>Create invitation</button></form><div id="invite-code">${sent ? `<p><strong>Invitation ready for ${esc(inviteResult.email)}${sent.name ? ` as ${esc(sent.name)}` : ""}.</strong> Roots does not send invitations itself: open it in your email app, or copy the link.</p><a class="light-button" href="${esc(sent.mailto)}">Open in your email app</a><label>Invitation link<input readonly value="${esc(sent.link)}"></label><small>Shown once. Anyone else who gets this link cannot use it: it works only for ${esc(inviteResult.email)}.</small>` : ""}</div><h3>${isOwner ? "Invitations" : "Invitations you sent"}</h3>${snapshot.invitations.map((i) => `<div class="member"><small>${status(i)} · ${esc(i.email || "Code without an address")}${i.person_id ? ` · as ${name(i.person_id)}` : ""}${isOwner && i.invited_by && i.invited_by !== me ? ` · sent by ${esc(snapshot.memberships.find((m) => m.user_id === i.invited_by)?.display_name || "a former member")}` : ""} · expires ${esc(new Date(i.expires_at).toLocaleDateString())}</small>${!i.used_at && !i.revoked_at ? `<button class="quiet" data-revoke="${i.id}" aria-label="Revoke invitation for ${esc(i.email || "code")}">Revoke</button>` : ""}</div>`).join("") || "<p>No invitations yet.</p>"}</section><details ${pendingInvite() || joinPreview ? "open" : ""}><summary>Create or join another family</summary>${onboarding()}</details>`;
 }
 // Every update re-renders the page. Keep the user's place: the focused control and any
 // unsent text in the feed, reply and gathering forms (not the form that was just saved).
@@ -227,7 +275,7 @@ function report(text) {
   say(removedFrom ? `You no longer have access to ${removedFrom}.` : text, Boolean(removedFrom));
   removedFrom = "";
 }
-const draftForms = "#post, form[data-comment], #event, form[data-tree-review], #profile, #invite-form";
+const draftForms = "#post, form[data-comment], #event, form[data-tree-review], #profile, #invite-form, #join-request";
 function formKey(form) {
   return form.id ? `#${form.id}` : form.dataset.comment ? `form[data-comment="${form.dataset.comment}"]` : form.dataset.treeReview ? `form[data-tree-review="${form.dataset.treeReview}"]` : "";
 }
@@ -302,7 +350,7 @@ function paint() {
     ["feed", "Family feed"],
     ["tree", "Family tree"],
     ["events", "Gatherings"],
-    ["members", "Members"],
+    ["members", owner() && snapshot.joinRequests?.length ? `Members (${snapshot.joinRequests.length})` : "Members"],
   ]
     .map(
       ([id, label]) =>
@@ -310,7 +358,7 @@ function paint() {
     )
     .join(
       "",
-    )}</nav><section id="family-content" data-view="${view}">${view === "tree" ? tree() : view === "events" ? events() : view === "members" ? members() : feed()}</section>`;
+    )}</nav><section id="family-content" data-tab="${view}">${view === "tree" ? tree() : view === "events" ? events() : view === "members" ? members() : feed()}</section>`;
 }
 async function run(task) {
   if (loading) return;
@@ -467,6 +515,24 @@ document.addEventListener("submit", (event) => {
       savedForm = "#profile";
       try { await loadFamily(); } finally { savedForm = ""; }
       report("Profile saved.");
+    } else if (form.id === "join-request") {
+      const year = data.birth_year ? Number(data.birth_year) : null;
+      await result(supabase.rpc("request_to_join", { code: pendingJoin(), display_name: data.display_name, note: data.note || "", birth_year: year }));
+      keepJoin("");
+      await refreshFamilies();
+      render();
+      say("Request sent. You will see the family here once an owner approves it.", true);
+    } else if (form.dataset.joinRequest) {
+      const decision = event.submitter?.value;
+      if (decision === "decline" && !confirm("Decline this request? They will not be able to see the family.")) return say("No changes made.");
+      const place = data.place || "none";
+      await result(supabase.rpc("decide_join_request", {
+        fid: familyId, request: form.dataset.joinRequest, decision,
+        person: place.startsWith("person:") ? place.slice(7) : place === "other" ? data.other : null,
+        add_person: decision === "approve" && place === "new",
+      }));
+      await loadFamily();
+      report(decision === "approve" ? "Approved. They are now a member of your family." : "Request declined.");
     } else if (form.id === "invite-form") {
       const email = data.email.trim();
       const code = await result(supabase.rpc("create_invitation", { fid: familyId, invite_email: email, invite_person: data.person || null }));
@@ -519,7 +585,8 @@ document.addEventListener("click", (event) => {
   }
   const treeAction = ["claim", "unlink", "approveClaim", "declineClaim"].find((key) => button.dataset[key]);
   if (
-    !["logout", "refresh", "more-posts"].includes(button.id) &&
+    !["logout", "refresh", "more-posts", "join-link-new", "join-link-off", "join-dismiss", "refresh-requests"].includes(button.id) &&
+    !button.dataset.withdrawRequest &&
     !button.dataset.react &&
     !button.dataset.remove &&
     !button.dataset.withdraw &&
@@ -529,7 +596,28 @@ document.addEventListener("click", (event) => {
   )
     return;
   run(async () => {
-    if (button.id === "logout") {
+    if (button.id === "join-link-new") {
+      if (snapshot.joinLink && !confirm("Replace the join link? The current link will stop working.")) return say("No changes made.");
+      await result(supabase.rpc("create_join_link", { fid: familyId }));
+      await loadFamily();
+      say("Join link ready. Copy it and share it with your family.");
+    } else if (button.id === "join-link-off") {
+      if (!confirm("Turn off the join link? Nobody new can ask to join with it.")) return say("No changes made.");
+      await result(supabase.rpc("revoke_join_link", { fid: familyId }));
+      await loadFamily();
+      say("Join link turned off.");
+    } else if (button.id === "join-dismiss") {
+      keepJoin("");
+      joinPreview = null;
+      render();
+      say("");
+    } else if (button.id === "refresh-requests" || button.dataset.withdrawRequest) {
+      if (button.dataset.withdrawRequest) await result(supabase.rpc("withdraw_join_request", { request: button.dataset.withdrawRequest }));
+      const before = families.length;
+      await refreshFamilies();
+      await loadFamily();
+      report(button.dataset.withdrawRequest ? "Request withdrawn." : families.length > before ? "You have been approved. Welcome to your family space." : "Still waiting for an owner.");
+    } else if (button.id === "logout") {
       await result(supabase.auth.signOut());
       session = null;
       snapshot = null;
@@ -633,6 +721,8 @@ document.addEventListener("keydown", (event) => {
 });
 document.addEventListener("change", (event) => {
   if (event.target.dataset?.photo) return uploadPhoto(event.target);
+  // Choosing someone from the list selects "Someone else in the tree".
+  if (event.target.name === "other") { const radio = event.target.closest("label")?.querySelector("input[type=radio]"); if (radio) radio.checked = true; }
   if (event.target.closest?.("#person")) updateApproval(event.target.closest("#person"));
   if(event.target.id === 'tree-branch') { treeBranch=event.target.value;render();return; }
   if (event.target.id === "family-select")

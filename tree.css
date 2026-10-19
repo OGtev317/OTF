@@ -25,7 +25,7 @@
 #invite-form :is(input,select),#invite-code input{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}
 /* Connected family tree: generations of cards joined by lines, with a panel for the selected person.
    The tree uses the page's full width; the other tabs keep their reading width. */
-#family-content[data-view=tree]{max-width:none}
+#family-content[data-tab=tree]{max-width:none}
 .tree-guidance summary{cursor:pointer;font-weight:600}.tree-guidance ul{margin:12px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13px;line-height:1.5}
 .tree-attention h4{margin:16px 0 6px;font-size:13px}.tree-attention .member span strong{font-weight:700}
 .tree-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:12px 16px;margin:22px 0}
@@ -85,3 +85,8 @@
 .tree-photo-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 .member{align-items:center}
 .tree-canvas .tree-node .tree-avatar{width:32px;height:32px;font-size:11px}
+/* Members list: the avatar and name sit together on the left. */
+.member>.tree-avatar+span{margin-right:auto;text-align:left}
+#join-requests>h2{margin:8px 0 0}
+#join-requests{margin-bottom:16px}
+.join-decision .kin-list .check select{margin-left:8px}

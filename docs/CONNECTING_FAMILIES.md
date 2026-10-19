@@ -29,13 +29,14 @@ stay minimal; memorial records keep the immediate-family rule (see "Decisions ne
 - Gramps Web and webtrees are GPL/AGPL: learn from them, do not copy their code. Topola and
   family-chart (MIT) are options for drawing very large trees later.
 
-## Part 1: join link and owner-approved requests
+## Part 1: join link and owner-approved requests (built 2026-10-18)
 
 For relatives who do not have an invitation.
 
-1. An owner turns on a **join link** in Members (`/join/<code>`), shares it where the family already
-   talks, and can replace, expire (default 30 days) or turn it off. Codes are random and stored
-   hashed, like invitation codes.
+1. An owner turns on a **join link** in Members (`/?join=<code>`, like invitation links), shares it
+   where the family already talks, and can replace or turn it off; it expires after 30 days. Codes
+   are random. Unlike invitation codes they are stored readable so owners can copy the link again:
+   a join link grants nothing without an owner's approval.
 2. A newcomer opens it, signs in or creates an account, and sees **only the family's name**. They
    send a **request to join** with the name they use, a short note ("I'm Maya's daughter Jordan")
    and, optionally, their birth year to help matching. At most 3 pending requests per account and

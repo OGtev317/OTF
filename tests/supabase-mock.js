@@ -16,7 +16,7 @@ export function query(rows) {
     limit: (n) => ((to = from + n - 1), builder),
     then(resolve, reject) {
       try {
-        const data = structuredClone(rows()).filter((r) => filters.every((f) => f(r)));
+        const data = structuredClone(rows() || []).filter((r) => filters.every((f) => f(r)));
         data.sort((a, b) => {
           for (const [key, up] of sort) {
             const c = String(a[key] ?? "").localeCompare(String(b[key] ?? ""));

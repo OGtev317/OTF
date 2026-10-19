@@ -25,6 +25,7 @@ const link=(child,parent)=>{const kid=rows.people.find(p=>p.id===child);kid.pare
 api.rpc.mockImplementation(async(name,{action,payload}={})=>{
   if(fixture.error)return {error:{message:fixture.error}};
   if(name==='list_invitations')return {data:[]};
+  if(name!=='tree_action')return {data:null};
   const me=rows.memberships.find(m=>m.user_id===fixture.user);
   if(action==='save'){
     const old=rows.people.find(p=>p.id===payload.id), id=old?.id||`person-${++fixture.next}`, child=payload.parent_of||'';

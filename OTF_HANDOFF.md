@@ -8,6 +8,18 @@ OTF means Only the Family. Build an app for families to connect, socialize, stay
 
 
 
+
+## Join links and requests to join (2026-10-18)
+
+Part 1 of `docs/CONNECTING_FAMILIES.md`, so relatives without an invitation can find the family.
+
+- **Owners** create a join link in Members (`/?join=<code>`, 30 days), copy it again, replace it or turn it off. A newcomer who opens it signs in or signs up (the code is kept in the browser through email confirmation), sees only the family's name, and sends a request with their name, an optional note and birth year. They see "Waiting for an owner", can check again or withdraw; approval takes them straight into the family.
+- **Owners** see "Members (n)" and each request with **"Is this them?" suggestions** (`matching.js`: first name exact, nickname, prefix or initial; surname exact or by Soundex, compared with every later part of the person's name for married or middle names; birth year within 3 years or the match is ruled out; living or unknown, unlinked people only). They link the newcomer to a suggestion or anyone else, add them as someone new, let them join without a place yet, or decline.
+- **Database** `20261025010000_join_requests.sql` (additive): `private.join_links` (one active link per family), `public.join_requests` (readable by the person asking and by owners; keeps the family's name as seen), and `join_link`, `create_join_link`, `revoke_join_link`, `preview_join_link` (name only, signed in only), `request_to_join` (one pending request per family, three per person, twenty per family), `withdraw_join_request`, `decide_join_request` (owners only; approval links or adds the person and creates the membership in one step; memorials cannot be linked).
+- No email alerts for owners yet: requests appear when owners open Roots. The demo shows a request from Casey Bennett.
+- Also: the content area's tab attribute is now `data-tab` (it clashed with the tab buttons' `data-view`); member rows keep the avatar and name together.
+- Validation: syntax checks; 23 browser test files with a clean exit (new matching, newcomer and owner tests); all seven PostgreSQL suites (new `supabase/tests/join.sql`); build; end-to-end against a local Supabase in Chromium and WebKit (owner creates a link; a newcomer signs up through it, sees only the name, asks with a near-miss spelling; the owner gets "Is this them? Jordan Bennett · born 1995" pre-selected and approves; the newcomer is linked to that person); the demo in both browsers at 1280 and 390 wide.
+
 ## Historical records (2026-10-18)
 
 The owner adopted the three decisions in `docs/CONNECTING_FAMILIES.md`: historical records (built now), owner-only tree export and leaving living relatives' birth dates out of imports by default (both for the later import/export work).

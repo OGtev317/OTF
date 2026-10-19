@@ -40,6 +40,7 @@ function seed() {
       person("leo", "Leo Bennett", { parents: ["rose", "james"], branch: "Leo’s household", story: "Collecting little moments and taking the scenic route." }),
       person("jordan", "Jordan Bennett", { parents: ["maya"], branch: "Maya’s household", story: "That’s you, in this fictional family." }),
       person("ava", "Ava Bennett", { parents: ["leo"], branch: "Leo’s household", story: "Just started a new job in the city." }),
+      person("casey", "Casey Bennett", { parents: ["leo"], birth_date: "1998-08-21", branch: "Leo’s household", story: "Studying to be a nurse." }),
     ],
     posts: [
       { id: "post-dinner", family_id: FAMILY, author_id: "demo-maya", body: "Sunday dinner at my place? Bring your favorite dish and a story from the week. I’m making Grandma Rose’s pasta.", created_at: hoursAgo(3) },
@@ -69,6 +70,11 @@ function seed() {
       { family_id: FAMILY, user_id: "demo-maya", about: "Teacher, gardener, and the family’s official dinner host.", work: "Third-grade teacher", share: "Text me before you visit so I can save you a plate.", updated_at: hoursAgo(48) },
       { family_id: FAMILY, user_id: "demo-leo", about: "Happiest on a long drive with good music.", work: "Bus driver", share: "", updated_at: hoursAgo(72) },
     ],
+    // Someone who opened the family's join link and asked to join.
+    join_requests: [
+      { id: "request-casey", family_id: FAMILY, user_id: "demo-casey", family_name: "The Bennetts", display_name: "Casey Bennett", note: "I’m Leo’s son and Ava’s brother. Dad sent me the link.", birth_year: 1998, status: "pending", created_at: hoursAgo(6), decided_by: null, decided_at: null, person_id: null },
+    ],
+    join_links: [],
     // Uploaded photos, by storage path, as data URLs kept in this browser.
     photos: {},
     invitations: [
@@ -81,7 +87,7 @@ let db = load();
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved?.version === 1) return { photos: {}, ...saved };
+    if (saved?.version === 1) return { photos: {}, join_requests: [], join_links: [], ...saved };
   } catch {}
   return seed();
 }
@@ -327,6 +333,41 @@ const rpcs = {
     return id;
   },
   accept_invitation: () => fail("Invitations work on the real Roots site, not in this demo."),
+  join_link: ({ fid }) => {
+    if (!owner(fid)) fail("Only a family owner can see the join link");
+    return db.join_links.filter((l) => l.family_id === fid && !l.revoked_at && Date.parse(l.expires_at) > Date.now()).map(({ code, created_at, expires_at }) => ({ code, created_at, expires_at }));
+  },
+  create_join_link: ({ fid, days = 30 }) => {
+    if (!owner(fid)) fail("Only a family owner can create a join link");
+    for (const l of db.join_links) if (l.family_id === fid && !l.revoked_at) l.revoked_at = now();
+    const code = [...crypto.getRandomValues(new Uint8Array(32))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    db.join_links.push({ family_id: fid, code, created_at: now(), expires_at: new Date(Date.now() + days * 864e5).toISOString(), revoked_at: null });
+    return code;
+  },
+  revoke_join_link: ({ fid }) => {
+    if (!owner(fid)) fail("Only a family owner can turn off the join link");
+    for (const l of db.join_links) if (l.family_id === fid && !l.revoked_at) l.revoked_at = now();
+    return null;
+  },
+  preview_join_link: () => fail("Join links work on the real Roots site, not in this demo."),
+  request_to_join: () => fail("Join links work on the real Roots site, not in this demo."),
+  withdraw_join_request: () => fail("Requests to join work on the real Roots site, not in this demo."),
+  decide_join_request: ({ fid, request, decision, person = null, add_person = false }) => {
+    if (!owner(fid)) fail("Only a family owner can decide requests to join");
+    const r = db.join_requests.find((x) => x.id === request && x.family_id === fid) || fail("Request unavailable");
+    if (r.status !== "pending") fail("This request has already been answered or withdrawn");
+    if (decision === "decline") { Object.assign(r, { status: "declined", decided_by: ME, decided_at: now() }); return null; }
+    let target = person;
+    if (add_person) { target = uid(); applyPerson(fid, target, treeRecord(fid, target, { name: r.display_name, life_status: "living" }), ME); }
+    else if (target) {
+      const p = db.people.find((x) => x.id === target && x.family_id === fid) || fail("Person unavailable");
+      if (p.life_status === "deceased") fail("A memorial record cannot be linked to an account");
+      if (db.memberships.some((m) => m.family_id === fid && m.person_id === target)) fail("Someone has already linked their account to this person");
+    }
+    db.memberships.push({ family_id: fid, user_id: r.user_id, display_name: r.display_name, role: "member", person_id: target, claim_person_id: null });
+    Object.assign(r, { status: "approved", decided_by: ME, decided_at: now(), person_id: target });
+    return target;
+  },
   set_person_photo: ({ fid, person, path = null }) => {
     need(fid);
     const p = db.people.find((x) => x.id === person && x.family_id === fid) || fail("Person unavailable");
